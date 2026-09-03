@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ahmed Riaz Textile Factory"
+description = "A public textile manufacturing portfolio for Ahmed Riaz in Baldia, Karachi, with product categories, factory capability, designs, and bulk inquiry contact paths."
+version = "1.0.0"
+id = "artifacts/ahmed-riaz-textile"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22684
+
+[services.development]
+run = "pnpm --filter @workspace/ahmed-riaz-textile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ahmed-riaz-textile", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ahmed-riaz-textile/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22684"
+BASE_PATH = "/"

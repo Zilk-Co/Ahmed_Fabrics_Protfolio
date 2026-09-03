@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Ahmed Riaz Textile Factory website and content management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: site
+    description: Public website content
+  - name: auth
+    description: Secure admin sessions
+  - name: admin
+    description: Protected content management
 paths:
   /healthz:
     get:
@@ -24,6 +30,181 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /site:
+    get:
+      operationId: getSite
+      tags: [site]
+      summary: Get published website content
+      responses:
+        "200":
+          description: Published content grouped for the public site
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteContent"
+  /auth/login:
+    post:
+      operationId: loginAdmin
+      tags: [auth]
+      summary: Start an admin session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid credentials
+        "503":
+          description: Admin credentials are not configured
+  /auth/session:
+    get:
+      operationId: getAdminSession
+      tags: [auth]
+      summary: Read the current admin session
+      responses:
+        "200":
+          description: Current session status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Not authenticated
+  /auth/logout:
+    post:
+      operationId: logoutAdmin
+      tags: [auth]
+      summary: End the current admin session
+      responses:
+        "204":
+          description: Session ended
+  /admin/dashboard:
+    get:
+      operationId: getAdminDashboard
+      tags: [admin]
+      summary: Get dashboard counts and recent content
+      responses:
+        "200":
+          description: Admin dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Not authenticated
+  /admin/content:
+    get:
+      operationId: listAdminContent
+      tags: [admin]
+      summary: List editable content
+      parameters:
+        - name: collection
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/ContentCollection"
+      responses:
+        "200":
+          description: Content items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContentRecord"
+        "401":
+          description: Not authenticated
+    post:
+      operationId: createAdminContent
+      tags: [admin]
+      summary: Create editable content
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentInput"
+      responses:
+        "201":
+          description: Created content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRecord"
+        "401":
+          description: Not authenticated
+    patch:
+      operationId: updateAdminSite
+      tags: [admin]
+      summary: Update site-level settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+        "401":
+          description: Not authenticated
+  /admin/content/{id}:
+    patch:
+      operationId: updateAdminContent
+      tags: [admin]
+      summary: Update editable content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContentUpdate"
+      responses:
+        "200":
+          description: Updated content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContentRecord"
+        "401":
+          description: Not authenticated
+        "404":
+          description: Content not found
+    delete:
+      operationId: deleteAdminContent
+      tags: [admin]
+      summary: Delete editable content
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "204":
+          description: Content deleted
+        "401":
+          description: Not authenticated
+        "404":
+          description: Content not found
 components:
   schemas:
     HealthStatus:
@@ -33,4 +214,156 @@ components:
           type: string
       required:
         - status
+    SiteSettings:
+      type: object
+      required: [brandName, location, phone, whatsapp, email, officeAddress, factoryAddress, businessHours, whatsappMessage]
+      properties:
+        brandName: { type: string }
+        location: { type: string }
+        phone: { type: string }
+        whatsapp: { type: string }
+        email: { type: string }
+        officeAddress: { type: string }
+        factoryAddress: { type: string }
+        businessHours: { type: string }
+        whatsappMessage: { type: string }
+        heroImage: { type: string }
+        heroVideo: { type: ["string", "null"] }
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        brandName: { type: string }
+        location: { type: string }
+        phone: { type: string }
+        whatsapp: { type: string }
+        email: { type: string }
+        officeAddress: { type: string }
+        factoryAddress: { type: string }
+        businessHours: { type: string }
+        whatsappMessage: { type: string }
+        heroImage: { type: string }
+        heroVideo: { type: ["string", "null"] }
+    FactoryStat:
+      type: object
+      required: [value, label, displayOrder]
+      properties:
+        value: { type: string }
+        label: { type: string }
+        displayOrder: { type: number }
+    ContentCollection:
+      type: string
+      enum: [designs, products, machinery, services, blogs, faqs, timeline, categories]
+    ContentRecord:
+      type: object
+      required: [id, collection, slug, title, shortDescription, description, category, image, images, video, published, featured, displayOrder, meta]
+      properties:
+        id: { type: number }
+        collection: { $ref: "#/components/schemas/ContentCollection" }
+        slug: { type: string }
+        title: { type: string }
+        shortDescription: { type: string }
+        description: { type: string }
+        category: { type: string }
+        image: { type: string }
+        images:
+          type: array
+          items: { type: string }
+        video: { type: ["string", "null"] }
+        published: { type: boolean }
+        featured: { type: boolean }
+        displayOrder: { type: number }
+        meta:
+          type: object
+          additionalProperties: true
+    ContentInput:
+      type: object
+      required: [collection, title, shortDescription, description]
+      properties:
+        collection: { $ref: "#/components/schemas/ContentCollection" }
+        slug: { type: string }
+        title: { type: string }
+        shortDescription: { type: string }
+        description: { type: string }
+        category: { type: string }
+        image: { type: string }
+        images:
+          type: array
+          items: { type: string }
+        video: { type: ["string", "null"] }
+        published: { type: boolean }
+        featured: { type: boolean }
+        displayOrder: { type: number }
+        meta:
+          type: object
+          additionalProperties: true
+    ContentUpdate:
+      type: object
+      properties:
+        slug: { type: string }
+        title: { type: string }
+        shortDescription: { type: string }
+        description: { type: string }
+        category: { type: string }
+        image: { type: string }
+        images:
+          type: array
+          items: { type: string }
+        video: { type: ["string", "null"] }
+        published: { type: boolean }
+        featured: { type: boolean }
+        displayOrder: { type: number }
+        meta:
+          type: object
+          additionalProperties: true
+    SiteContent:
+      type: object
+      required: [settings, stats, designs, products, machinery, services, blogs, faqs, timeline]
+      properties:
+        settings: { $ref: "#/components/schemas/SiteSettings" }
+        stats:
+          type: array
+          items: { $ref: "#/components/schemas/FactoryStat" }
+        designs:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        products:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        machinery:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        services:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        blogs:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        faqs:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+        timeline:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
+    LoginInput:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 1 }
+        password: { type: string, minLength: 1 }
+    AuthSession:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated: { type: boolean }
+        username: { type: ["string", "null"] }
+    DashboardSummary:
+      type: object
+      required: [counts, recent]
+      properties:
+        counts:
+          type: object
+          additionalProperties: { type: number }
+        recent:
+          type: array
+          items: { $ref: "#/components/schemas/ContentRecord" }
 
