@@ -355,12 +355,14 @@ async function ensureSeeded() {
       founderQuote: "We started with one machine and a clear idea: make textiles that actually work for the people who use them.",
       founderImage: "/founder.jpg",
     }).where(eq(siteSettingsTable.id, settings[0].id));
-    await db.update(factoryStatsTable).set({ value: "99+" }).where(eq(factoryStatsTable.label, "Machines"));
-    await db.update(factoryStatsTable).set({ value: "55+" }).where(eq(factoryStatsTable.label, "Workers"));
-    const existingYears = await db.select({ id: factoryStatsTable.id }).from(factoryStatsTable).where(eq(factoryStatsTable.label, "Years")).limit(1);
-    if (existingYears.length === 0) {
-      await db.insert(factoryStatsTable).values({ value: "46+", label: "Years", displayOrder: 3 });
-    }
+    // Delete all old stats and re-insert correct ones
+    await db.delete(factoryStatsTable);
+    await db.insert(factoryStatsTable).values([
+      { value: "99+", label: "Machines", displayOrder: 1 },
+      { value: "55+", label: "Workers", displayOrder: 2 },
+      { value: "46+", label: "Years", displayOrder: 3 },
+      { value: "B2B", label: "Custom Production", displayOrder: 4 },
+    ]);
   }
   const existingContent = await db.select({ id: contentTable.id }).from(contentTable).limit(1);
   if (existingContent.length === 0) {
