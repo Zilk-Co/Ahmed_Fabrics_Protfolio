@@ -880,3 +880,55 @@ export const useDeleteAdminContent = <TError = ErrorType<void>,
       return useMutation(getDeleteAdminContentMutationOptions(options));
     }
 
+export const getSeedSampleDataUrl = () => {
+
+  return `/api/admin/seed-sample`
+}
+
+/**
+ * @summary Seed sample content for demo
+ */
+export const seedSampleData = async (options?: Parameters<typeof customFetch>[1]): Promise<{added: number; total: number}> => {
+
+  return customFetch<{added: number; total: number}>(getSeedSampleDataUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+  }
+);}
+
+
+
+export const getSeedSampleDataMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof seedSampleData>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof seedSampleData>>, TError,void, TContext> => {
+const mutationKey = ['seedSampleData'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+const mutationFn: MutationFunction<Awaited<ReturnType<typeof seedSampleData>>, void> = () => {
+  return seedSampleData(requestOptions)
+}
+return { ...mutationOptions, mutationFn }}
+
+export type SeedSampleDataMutationResult = NonNullable<Awaited<ReturnType<typeof seedSampleData>>>
+export type SeedSampleDataMutationError = ErrorType<void>
+
+/**
+ * @summary Seed sample content for demo
+ */
+export const useSeedSampleData = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof seedSampleData>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof seedSampleData>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSeedSampleDataMutationOptions(options));
+    }
+

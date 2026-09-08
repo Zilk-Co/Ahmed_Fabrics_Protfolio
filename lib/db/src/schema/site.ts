@@ -24,6 +24,16 @@ export const siteSettingsTable = pgTable("site_settings", {
   whatsappMessage: text("whatsapp_message").notNull(),
   heroImage: text("hero_image").notNull(),
   heroVideo: text("hero_video"),
+  aboutHeroImage: text("about_hero_image"),
+  servicesHeroImage: text("services_hero_image"),
+  productsHeroImage: text("products_hero_image"),
+  designsHeroImage: text("designs_hero_image"),
+  excellenceHeroImage: text("excellence_hero_image"),
+  contactHeroImage: text("contact_hero_image"),
+  founderName: text("founder_name"),
+  founderTitle: text("founder_title"),
+  founderQuote: text("founder_quote"),
+  founderImage: text("founder_image"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow()
@@ -81,6 +91,25 @@ export const insertAdminSessionSchema = createInsertSchema(adminSessionsTable).o
   id: true,
   createdAt: true,
 });
+
+export const pageTextTable = pgTable("page_text", {
+  id: serial("id").primaryKey(),
+  page: varchar("page", { length: 64 }).notNull(),
+  key: varchar("key", { length: 128 }).notNull(),
+  value: text("value").notNull(),
+  color: varchar("color", { length: 32 }),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const insertPageTextSchema = createInsertSchema(pageTextTable).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type PageText = typeof pageTextTable.$inferSelect;
 
 export type SiteSettings = z.infer<typeof insertSiteSettingsSchema>;
 export type FactoryStat = z.infer<typeof insertFactoryStatSchema>;

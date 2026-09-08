@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>/</loc></url>
-  <url><loc>/about</loc></url>
-  <url><loc>/services</loc></url>
-  <url><loc>/products</loc></url>
-  <url><loc>/designs</loc></url>
-  <url><loc>/excellence</loc></url>
-  <url><loc>/contact</loc></url>
+  <url><loc>https://riazfabrics.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://riazfabrics.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://riazfabrics.com/services</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://riazfabrics.com/products</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://riazfabrics.com/designs</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://riazfabrics.com/excellence</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://riazfabrics.com/contact</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://riazfabrics.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://riazfabrics.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

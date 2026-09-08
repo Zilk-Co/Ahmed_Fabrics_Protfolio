@@ -1,8 +1,9 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from "express";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { and, asc, desc, eq, gt } from "drizzle-orm";
-import { db, adminSessionsTable, contentTable, factoryStatsTable, siteSettingsTable } from "@workspace/db";
+import { db, adminSessionsTable, contentTable, factoryStatsTable, siteSettingsTable, pageTextTable } from "@workspace/db";
 import {
   ContentCollection,
   CreateAdminContentBody,
@@ -29,7 +30,7 @@ const seedContent = [
     slug: "woven-sage-grid",
     title: "Woven Sage Grid",
     shortDescription: "A restrained woven arrangement with a soft, structured finish.",
-    description: "A textile design study showing how a calm, repeatable pattern can translate into dependable bulk production. Replace this demo entry with an actual Ahmed Riaz design when ready.",
+    description: "A textile design study showing how a calm, repeatable pattern can translate into dependable custom production. Replace this demo entry with an actual Ahmed Riaz design when ready.",
     category: "Woven design",
     image: fabricImage,
     images: [fabricImage, heroImage],
@@ -70,7 +71,7 @@ const seedContent = [
     collection: "products",
     slug: "cotton-cloth",
     title: "Cotton Cloth",
-    shortDescription: "Fabric production for bulk requirements and local textile work.",
+    shortDescription: "Fabric production for custom requirements and local textile work.",
     description: "Ahmed Riaz works with cotton cloth and related fabric requirements for brands, local businesses, and wholesale customers. Final material, quantity, and finish are discussed before production.",
     category: "Fabric",
     image: fabricImage,
@@ -78,7 +79,7 @@ const seedContent = [
     published: true,
     featured: true,
     displayOrder: 1,
-    meta: { application: "Bulk fabric requirements" },
+    meta: { application: "Custom fabric requirements" },
   },
   {
     collection: "products",
@@ -153,9 +154,9 @@ const seedContent = [
   {
     collection: "services",
     slug: "bulk-textile-manufacturing",
-    title: "Bulk Textile Manufacturing",
-    shortDescription: "Production planning for large-quantity textile requirements.",
-    description: "From an initial requirement to production planning, Ahmed Riaz supports bulk textile work with a practical focus on quantity, material, and delivery coordination.",
+    title: "Custom Textile Manufacturing",
+    shortDescription: "Production planning for custom-quantity textile requirements.",
+    description: "From an initial requirement to production planning, Ahmed Riaz supports custom textile work with a practical focus on quantity, material, and delivery coordination.",
     category: "Manufacturing",
     image: heroImage,
     images: [heroImage],
@@ -195,9 +196,9 @@ const seedContent = [
   {
     collection: "faqs",
     slug: "bulk-orders",
-    title: "Do you accept bulk orders?",
-    shortDescription: "Yes. Bulk quantity is a central part of the factory's work.",
-    description: "Ahmed Riaz works with bulk textile requirements for selected brands, local businesses, and wholesale customers. Share the quantity and fabric brief to start a conversation.",
+    title: "Do you accept custom orders?",
+    shortDescription: "Yes. Custom quantity is a central part of the factory's work.",
+    description: "Ahmed Riaz works with custom textile requirements for selected brands, local businesses, and wholesale customers. Share the quantity and fabric brief to start a conversation.",
     category: "Ordering",
     image: "",
     images: [],
@@ -251,10 +252,10 @@ const seedContent = [
   {
     collection: "blogs",
     slug: "planning-a-bulk-textile-order",
-    title: "Planning a bulk textile order",
+    title: "Planning a custom textile order",
     shortDescription: "The details that help a factory review a production brief.",
     description: "A useful production brief usually covers the textile application, material direction, approximate quantity, finishing expectations, and timing. Clear information early helps the factory respond more accurately.",
-    category: "Bulk orders",
+    category: "Custom orders",
     image: fabricImage,
     images: [fabricImage],
     published: true,
@@ -317,42 +318,62 @@ function recordToApi(record: typeof contentTable.$inferSelect) {
 
 async function ensureSeeded() {
   const settings = await db.select({ id: siteSettingsTable.id }).from(siteSettingsTable).limit(1);
-  if (settings.length > 0) return;
-
-  await db.insert(siteSettingsTable).values({
-    brandName: "Ahmed Riaz",
-    location: "Baldia, Karachi, Pakistan",
-    phone: "",
-    whatsapp: "",
-    email: "",
-    officeAddress: "Add office address in Admin",
-    factoryAddress: "Baldia, Karachi, Pakistan",
-    businessHours: "Add business hours in Admin",
-    whatsappMessage: "Hello Ahmed Riaz, I would like to discuss a bulk textile requirement.",
-    heroImage,
-    heroVideo: null,
-  });
-  await db.insert(factoryStatsTable).values([
-    { value: "97+", label: "Machines", displayOrder: 1 },
-    { value: "100+", label: "Workers", displayOrder: 2 },
-    { value: "Bulk", label: "Production", displayOrder: 3 },
-    { value: "Baldia", label: "Karachi", displayOrder: 4 },
-  ]);
-  await db.insert(contentTable).values(seedContent.map((item) => ({
-    collection: item.collection,
-    slug: item.slug,
-    title: item.title,
-    shortDescription: item.shortDescription,
-    description: item.description,
-    category: item.category,
-    image: item.image,
-    images: item.images,
-    video: null,
-    published: item.published,
-    featured: item.featured,
-    displayOrder: item.displayOrder,
-    meta: item.meta,
-  })));
+  if (settings.length === 0) {
+    await db.insert(siteSettingsTable).values({
+      brandName: "Riaz Fabrics",
+      location: "Baldia, Karachi, Pakistan",
+      phone: "",
+      whatsapp: "",
+      email: "",
+      officeAddress: "Baldia, Karachi, Pakistan",
+      factoryAddress: "Baldia, Karachi, Pakistan",
+      businessHours: "Add business hours in Admin",
+      whatsappMessage: "Hello Riaz Fabrics, I would like to discuss a textile requirement.",
+      heroImage,
+      heroVideo: null,
+      founderName: "Riaz Ahmed",
+      founderTitle: "Founder & Managing Director",
+      founderQuote: "We started with one machine and a clear idea: make textiles that actually work for the people who use them.",
+      founderImage: "/founder.jpg",
+    });
+    await db.insert(factoryStatsTable).values([
+      { value: "100+", label: "Machines", displayOrder: 1 },
+      { value: "50+", label: "Workers", displayOrder: 2 },
+      { value: "46+", label: "Years", displayOrder: 3 },
+      { value: "Custom", label: "Production", displayOrder: 4 },
+      { value: "Baldia", label: "Karachi", displayOrder: 5 },
+    ]);
+  } else {
+    await db.update(siteSettingsTable).set({
+      brandName: "Ahmed Riaz Co",
+      whatsappMessage: "Hello Ahmed Riaz, I would like to discuss a textile requirement.",
+    }).where(eq(siteSettingsTable.id, settings[0].id));
+    await db.update(factoryStatsTable).set({ value: "100+" }).where(eq(factoryStatsTable.label, "Machines"));
+    await db.update(factoryStatsTable).set({ value: "50+" }).where(eq(factoryStatsTable.label, "Workers"));
+    await db.update(factoryStatsTable).set({ value: "Custom" }).where(eq(factoryStatsTable.value, "Bulk"));
+    const existingYears = await db.select({ id: factoryStatsTable.id }).from(factoryStatsTable).where(eq(factoryStatsTable.label, "Years")).limit(1);
+    if (existingYears.length === 0) {
+      await db.insert(factoryStatsTable).values({ value: "46+", label: "Years", displayOrder: 3 });
+    }
+  }
+  const existingContent = await db.select({ id: contentTable.id }).from(contentTable).limit(1);
+  if (existingContent.length === 0) {
+    await db.insert(contentTable).values(seedContent.map((item) => ({
+      collection: item.collection,
+      slug: item.slug,
+      title: item.title,
+      shortDescription: item.shortDescription,
+      description: item.description,
+      category: item.category,
+      image: item.image,
+      images: item.images,
+      video: null,
+      published: item.published,
+      featured: item.featured,
+      displayOrder: item.displayOrder,
+      meta: item.meta,
+    })));
+  }
 }
 
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
@@ -401,18 +422,36 @@ router.get("/site", async (_req, res) => {
       whatsappMessage: settings.whatsappMessage,
       heroImage: settings.heroImage,
       heroVideo: settings.heroVideo,
+      aboutHeroImage: settings.aboutHeroImage,
+      servicesHeroImage: settings.servicesHeroImage,
+      productsHeroImage: settings.productsHeroImage,
+      designsHeroImage: settings.designsHeroImage,
+      excellenceHeroImage: settings.excellenceHeroImage,
+      contactHeroImage: settings.contactHeroImage,
+      founderName: settings.founderName,
+      founderTitle: settings.founderTitle,
+      founderQuote: settings.founderQuote,
+      founderImage: settings.founderImage,
     },
     stats: stats.map((stat) => ({ value: stat.value, label: stat.label, displayOrder: stat.displayOrder })),
     ...grouped,
   });
 });
 
-router.post("/auth/login", async (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many login attempts. Try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post("/auth/login", loginLimiter, async (req, res) => {
   const data = LoginAdminBody.parse(req.body);
   const configuredUsername = process.env.ADMIN_USERNAME;
   const configuredPassword = process.env.ADMIN_PASSWORD;
   if (!configuredUsername || !configuredPassword) {
-    res.status(503).json({ error: "Admin credentials are not configured in Replit Secrets" });
+    res.status(503).json({ error: "Admin credentials are not configured" });
     return;
   }
   if (!safeEqual(data.username, configuredUsername) || !safeEqual(data.password, configuredPassword)) {
@@ -429,11 +468,11 @@ router.post("/auth/login", async (req, res) => {
   res.cookie(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: true,
     maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
     path: "/",
   });
-  res.json({ authenticated: true, username: configuredUsername });
+  res.json({ authenticated: true });
 });
 
 router.get("/auth/session", async (req, res) => {
@@ -458,7 +497,7 @@ router.get("/auth/session", async (req, res) => {
 router.post("/auth/logout", async (req, res) => {
   const token = getToken(req);
   if (token) await db.delete(adminSessionsTable).where(eq(adminSessionsTable.tokenHash, hashToken(token)));
-  res.clearCookie(SESSION_COOKIE, { httpOnly: true, sameSite: "lax", path: "/" });
+  res.clearCookie(SESSION_COOKIE, { httpOnly: true, sameSite: "lax", secure: true, path: "/" });
   res.status(204).send();
 });
 
@@ -522,6 +561,16 @@ router.patch("/admin/content", requireAdmin, async (req, res) => {
     whatsappMessage: settings.whatsappMessage,
     heroImage: settings.heroImage,
     heroVideo: settings.heroVideo,
+    aboutHeroImage: settings.aboutHeroImage,
+    servicesHeroImage: settings.servicesHeroImage,
+    productsHeroImage: settings.productsHeroImage,
+    designsHeroImage: settings.designsHeroImage,
+    excellenceHeroImage: settings.excellenceHeroImage,
+    contactHeroImage: settings.contactHeroImage,
+    founderName: settings.founderName,
+    founderTitle: settings.founderTitle,
+    founderQuote: settings.founderQuote,
+    founderImage: settings.founderImage,
   });
 });
 
@@ -544,6 +593,63 @@ router.delete("/admin/content/:id", requireAdmin, async (req, res) => {
     return;
   }
   res.status(204).send();
+});
+
+// Page text endpoints (public read, admin write)
+router.get("/page-text", async (req, res) => {
+  const page = req.query.page as string;
+  if (!page) { res.status(400).json({ error: "page query required" }); return; }
+  const rows = await db.select().from(pageTextTable).where(eq(pageTextTable.page, page));
+  const result: Record<string, { value: string; color?: string }> = {};
+  for (const row of rows) { result[row.key] = { value: row.value, color: row.color || undefined }; }
+  res.json(result);
+});
+
+router.patch("/admin/page-text", requireAdmin, async (req, res) => {
+  const { page, key, value, color } = req.body as { page: string; key: string; value: string; color?: string };
+  if (!page || !key || value === undefined) { res.status(400).json({ error: "page, key, and value required" }); return; }
+  const [existing] = await db.select().from(pageTextTable).where(and(eq(pageTextTable.page, page), eq(pageTextTable.key, key))).limit(1);
+  if (existing) {
+    await db.update(pageTextTable).set({ value, color: color || null }).where(eq(pageTextTable.id, existing.id));
+  } else {
+    await db.insert(pageTextTable).values({ page, key, value, color: color || null });
+  }
+  res.json({ ok: true });
+});
+
+router.delete("/admin/page-text", requireAdmin, async (req, res) => {
+  const { page, key } = req.body as { page: string; key: string };
+  if (!page || !key) { res.status(400).json({ error: "page and key required" }); return; }
+  await db.delete(pageTextTable).where(and(eq(pageTextTable.page, page), eq(pageTextTable.key, key)));
+  res.status(204).send();
+});
+
+const sampleItems = [
+  { collection: "products", slug: "sample-polyester-fabric", title: "Polyester Blend Fabric", shortDescription: "A durable polyester blend suitable for everyday textile applications.", description: "Polyester blend fabric designed for repeated use in garments, home textiles and commercial applications. The material balances durability with a practical finish.", category: "Fabric", image: fabricImage, images: [fabricImage], published: true, featured: false, displayOrder: 10, meta: { application: "General textile use" } },
+  { collection: "designs", slug: "sample-geometric-weave", title: "Geometric Weave Pattern", shortDescription: "A structured geometric pattern for woven textile production.", description: "A geometric weave design created for repeat production on the factory floor. The pattern can be adapted to different thread counts and colour combinations.", category: "Woven design", image: fabricImage, images: [fabricImage], published: true, featured: false, displayOrder: 10, meta: { note: "Sample design entry" } },
+  { collection: "machinery", slug: "sample-weaving-loom", title: "Power Loom Section", shortDescription: "The main weaving section with multiple power looms in operation.", description: "Power looms form the core of the weaving section, producing fabric at scale for a range of textile applications. Each loom can be configured for different weave patterns and thread densities.", category: "Weaving", image: heroImage, images: [heroImage], published: true, featured: false, displayOrder: 10, meta: { capacity: "Multiple looms" } },
+  { collection: "services", slug: "sample-fabric-dyeing", title: "Fabric Dyeing Service", shortDescription: "Custom dyeing for fabric in various colours and finishes.", description: "The factory offers fabric dyeing services tailored to customer specifications. Colour matching, batch consistency and finishing are managed in-house.", category: "Dyeing", image: fabricImage, images: [fabricImage], published: true, featured: false, displayOrder: 10, meta: { audience: "Customers requiring custom colours" } },
+  { collection: "faqs", slug: "sample-minimum-order", title: "Is there a minimum order quantity?", shortDescription: "Minimum order depends on the product and material type.", description: "Minimum order quantities vary based on the textile product, material and production setup. Contact us with your requirements and we will confirm what is possible.", category: "Orders", image: "", images: [], published: true, featured: false, displayOrder: 10, meta: {} },
+  { collection: "blogs", slug: "sample-textile-quality", title: "How we maintain textile quality", shortDescription: "Quality checks at every stage of production.", description: "Quality control at Riaz Fabrics starts from raw material inspection and continues through weaving, dyeing, finishing and packing. Each stage has defined checks to maintain consistency.", category: "Quality", image: fabricImage, images: [fabricImage], published: true, featured: false, displayOrder: 10, meta: { author: "Riaz Fabrics" } },
+  { collection: "timeline", slug: "sample-new-machinery", title: "New machinery installed", shortDescription: "Added new equipment to expand production capacity.", description: "A new batch of machinery was installed to increase production throughput and support a wider range of textile applications.", category: "2024", image: heroImage, images: [heroImage], published: true, featured: false, displayOrder: 10, meta: {} },
+  { collection: "categories", slug: "sample-home-textiles", title: "Home Textiles", shortDescription: "Textile products for home and interior applications.", description: "Home textiles including bed sheets, curtains and upholstery fabric. Each product can be定制ised by material, colour and quantity.", category: "Home", image: fabricImage, images: [fabricImage], published: true, featured: false, displayOrder: 10, meta: {} },
+];
+
+router.post("/admin/seed-sample", requireAdmin, async (_req, res) => {
+  const existing = await db.select({ id: contentTable.id }).from(contentTable).limit(1);
+  if (existing.length === 0) {
+    res.status(400).json({ error: "Run initial seed first by visiting the public site." });
+    return;
+  }
+  let added = 0;
+  for (const item of sampleItems) {
+    const slugExists = await db.select({ id: contentTable.id }).from(contentTable).where(eq(contentTable.slug, item.slug)).limit(1);
+    if (slugExists.length === 0) {
+      await db.insert(contentTable).values(item);
+      added++;
+    }
+  }
+  res.json({ added, total: sampleItems.length });
 });
 
 export default router;

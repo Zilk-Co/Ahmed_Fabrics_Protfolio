@@ -22,6 +22,16 @@ export interface SiteSettings {
   heroImage?: string;
   /** @nullable */
   heroVideo?: string | null;
+  aboutHeroImage?: string;
+  servicesHeroImage?: string;
+  productsHeroImage?: string;
+  designsHeroImage?: string;
+  excellenceHeroImage?: string;
+  contactHeroImage?: string;
+  founderName?: string;
+  founderTitle?: string;
+  founderQuote?: string;
+  founderImage?: string;
 }
 
 export interface SiteSettingsUpdate {
@@ -37,6 +47,16 @@ export interface SiteSettingsUpdate {
   heroImage?: string;
   /** @nullable */
   heroVideo?: string | null;
+  aboutHeroImage?: string;
+  servicesHeroImage?: string;
+  productsHeroImage?: string;
+  designsHeroImage?: string;
+  excellenceHeroImage?: string;
+  contactHeroImage?: string;
+  founderName?: string;
+  founderTitle?: string;
+  founderQuote?: string;
+  founderImage?: string;
 }
 
 export interface FactoryStat {
