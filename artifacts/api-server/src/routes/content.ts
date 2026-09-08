@@ -2,7 +2,7 @@ import { Router, type IRouter, type Request, type Response, type NextFunction } 
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { and, asc, desc, eq, gt } from "drizzle-orm";
+import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { db, adminSessionsTable, contentTable, factoryStatsTable, siteSettingsTable, pageTextTable } from "@workspace/db";
 import {
   ContentCollection,
@@ -630,6 +630,79 @@ router.delete("/admin/page-text", requireAdmin, async (req, res) => {
   if (!page || !key) { res.status(400).json({ error: "page and key required" }); return; }
   await db.delete(pageTextTable).where(and(eq(pageTextTable.page, page), eq(pageTextTable.key, key)));
   res.status(204).send();
+});
+
+// Categories endpoint - returns unique categories per collection
+router.get("/admin/categories", requireAdmin, async (req, res) => {
+  const collection = req.query.collection as string | undefined;
+  const whereClause = collection
+    ? eq(contentTable.collection, collection)
+    : undefined;
+  const rows = await db
+    .select({ category: contentTable.category, collection: contentTable.collection })
+    .from(contentTable)
+    .where(whereClause);
+  const result: Record<string, string[]> = {};
+  for (const row of rows) {
+    if (!row.category) continue;
+    const coll = row.collection as string;
+    if (!result[coll]) result[coll] = [];
+    if (!result[coll].includes(row.category)) result[coll].push(row.category);
+  }
+  res.json(result);
+});
+
+// Bulk operations
+router.post("/admin/content/bulk", requireAdmin, async (req, res) => {
+  const { ids, action } = req.body as { ids: number[]; action: "publish" | "unpublish" | "feature" | "unfeature" | "delete" };
+  if (!ids?.length || !action) { res.status(400).json({ error: "ids and action required" }); return; }
+  if (action === "delete") {
+    for (const id of ids) {
+      await db.delete(contentTable).where(eq(contentTable.id, id));
+    }
+  } else if (action === "publish") {
+    for (const id of ids) {
+      await db.update(contentTable).set({ published: true }).where(eq(contentTable.id, id));
+    }
+  } else if (action === "unpublish") {
+    for (const id of ids) {
+      await db.update(contentTable).set({ published: false }).where(eq(contentTable.id, id));
+    }
+  } else if (action === "feature") {
+    for (const id of ids) {
+      await db.update(contentTable).set({ featured: true }).where(eq(contentTable.id, id));
+    }
+  } else if (action === "unfeature") {
+    for (const id of ids) {
+      await db.update(contentTable).set({ featured: false }).where(eq(contentTable.id, id));
+    }
+  }
+  res.json({ processed: ids.length });
+});
+
+// Duplicate content
+router.post("/admin/content/:id/duplicate", requireAdmin, async (req, res) => {
+  const { id } = UpdateAdminContentParams.parse({ id: Number(req.params.id) });
+  const [original] = await db.select().from(contentTable).where(eq(contentTable.id, id)).limit(1);
+  if (!original) { res.status(404).json({ error: "Content not found" }); return; }
+  const baseSlug = original.slug.replace(/^(designs|products|machinery|services|blogs|faqs|timeline|categories)-/, '');
+  const newSlug = `${original.collection}-${baseSlug}-copy-${Date.now()}`;
+  const [copy] = await db.insert(contentTable).values({
+    collection: original.collection,
+    slug: newSlug,
+    title: `${original.title} (Copy)`,
+    shortDescription: original.shortDescription,
+    description: original.description,
+    category: original.category,
+    image: original.image,
+    images: original.images,
+    video: original.video,
+    published: false,
+    featured: false,
+    displayOrder: original.displayOrder + 1,
+    meta: original.meta,
+  }).returning();
+  res.status(201).json(recordToApi(copy));
 });
 
 const sampleItems = [

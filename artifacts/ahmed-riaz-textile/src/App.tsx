@@ -2,9 +2,12 @@ import { useEffect, useState, useRef, useContext, createContext, type FormEvent,
 import { QueryClient, QueryClientProvider, useQueryClient, useQuery, useMutation } from '@tanstack/react-query';
 import {
   ArrowLeft, ArrowUpRight, Check, ChevronLeft, ChevronRight,
-  Database, Eye, EyeOff, Factory, FileText, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin,
+  Database, Download, Eye, EyeOff, Factory, FileText, Images, LayoutDashboard, Loader2, LogOut, Mail, MapPin,
   Menu, MessageCircle, Pencil, Phone, Plus, Save, Settings, ShieldCheck,
-  SlidersHorizontal, Star, Trash2, X, Zap,
+  SlidersHorizontal, Star, Trash2, Upload, X, Zap, Search, Filter,
+  Copy, ExternalLink, Globe, Clock, Tag, Layers, GripVertical, CheckSquare, Square,
+  ImagePlus, Link as LinkIcon, Type, AlignLeft, Hash, BarChart3, TrendingUp,
+  CircleDot, ChevronDown,
 } from 'lucide-react';
 import {
   ContentCollection, type ContentInput, type ContentRecord, type ContentUpdate,
@@ -16,6 +19,7 @@ import {
   useDeleteAdminContent, useGetAdminDashboard, useGetAdminSession, useGetSite,
   useHealthCheck, useListAdminContent, useLoginAdmin, useLogoutAdmin,
   useSeedSampleData, useUpdateAdminContent, useUpdateAdminSite,
+  useGetCategories, useBulkContentAction, useDuplicateContent,
 } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -701,56 +705,400 @@ function AdminLoginPage() {
 function LoadingPage() { return <div className="min-h-[100dvh] bg-background"><div className="mx-auto max-w-[1380px] space-y-4 px-4 py-20 sm:space-y-5 sm:px-5 sm:py-24 lg:px-10"><div className="h-3 w-24 animate-pulse bg-muted sm:w-28" /><div className="h-20 max-w-3xl animate-pulse bg-muted sm:h-28" /><div className="h-4 max-w-md animate-pulse bg-muted sm:h-5" /></div></div>; }
 function EmptyState({ title, body }: { title: string; body: string }) { return <div className="mx-auto max-w-[1380px] px-4 py-20 text-center sm:px-5 sm:py-28 lg:px-10"><div className="mx-auto grid h-12 w-12 place-items-center border border-border text-primary sm:h-14 sm:w-14"><FileText size={18} /></div><h1 className="mt-6 font-display text-3xl text-primary sm:mt-7 sm:text-4xl">{title}</h1><p className="mx-auto mt-3 max-w-md text-[13px] leading-6 text-muted-foreground sm:mt-4 sm:text-sm sm:leading-7">{body}</p><div className="mt-6 sm:mt-8"><ArrowLink href="/contact">Talk to the factory</ArrowLink></div></div>; }
 
+// ---------- IMAGE UPLOAD COMPONENT ----------
+function ImageUpload({ value, onChange, label, previewSize = 'md' }: { value: string; onChange: (url: string) => void; label: string; previewSize?: 'sm' | 'md' | 'lg' }) {
+  const [mode, setMode] = useState<'url' | 'file'>('url');
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const h = previewSize === 'lg' ? 'h-40' : previewSize === 'md' ? 'h-24' : 'h-16';
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => { if (typeof reader.result === 'string') onChange(reader.result); };
+    reader.readAsDataURL(file);
+  };
+  return <div className="space-y-2"><FieldLabel>{label}</FieldLabel>
+    <div className="flex gap-1 border-b border-border"><button type="button" onClick={() => setMode('url')} className={`px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.1em] transition-colors ${mode === 'url' ? 'text-primary border-b-2 border-primary -mb-px' : 'text-muted-foreground'}`}><span className="flex items-center gap-1"><LinkIcon size={10} /> URL</span></button>
+      <button type="button" onClick={() => setMode('file')} className={`px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.1em] transition-colors ${mode === 'file' ? 'text-primary border-b-2 border-primary -mb-px' : 'text-muted-foreground'}`}><span className="flex items-center gap-1"><Upload size={10} /> Upload</span></button></div>
+    {mode === 'url' ? <input value={value || ''} onChange={e => onChange(e.target.value)} className="editor-input" placeholder="https://example.com/image.jpg" />
+      : <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); }}
+          className={`flex flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed p-4 transition-colors cursor-pointer ${dragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+          onClick={() => fileRef.current?.click()}>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }} />
+          <ImagePlus size={20} className="text-muted-foreground" />
+          <p className="text-[10px] text-muted-foreground">Click or drag image here</p></div>}
+    {value && <div className="relative mt-2 overflow-hidden rounded-sm border border-border"><img src={value} alt="Preview" className={`${h} w-full object-cover`} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} /><button type="button" onClick={() => onChange('')} className="absolute top-1 right-1 grid h-5 w-5 place-items-center rounded bg-black/60 text-white hover:bg-black/80"><X size={10} /></button></div>}
+  </div>;
+}
+
+// ---------- MULTI-IMAGE UPLOAD ----------
+function MultiImageUpload({ images, onChange }: { images: string[]; onChange: (urls: string[]) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const handleFiles = (files: FileList) => {
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = () => { if (typeof reader.result === 'string') onChange([...images, reader.result]); };
+      reader.readAsDataURL(file);
+    });
+  };
+  return <div className="space-y-2"><FieldLabel>Gallery images ({images.length})</FieldLabel>
+    <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)}
+      onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); }}
+      className={`flex flex-col items-center justify-center gap-2 rounded-sm border-2 border-dashed p-3 transition-colors cursor-pointer ${dragOver ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+      onClick={() => fileRef.current?.click()}>
+      <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={e => { if (e.target.files?.length) handleFiles(e.target.files); }} />
+      <ImagePlus size={16} className="text-muted-foreground" />
+      <p className="text-[10px] text-muted-foreground">Add images (click or drag)</p></div>
+    {images.length > 0 && <div className="mt-2 grid grid-cols-3 gap-2">{images.map((img, i) => <div key={i} className="relative group overflow-hidden rounded-sm border border-border"><img src={img} alt="" className="h-16 w-full object-cover" /><button type="button" onClick={() => onChange(images.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 grid h-4 w-4 place-items-center rounded bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"><X size={8} /></button></div>)}</div>}
+  </div>;
+}
+
+// ---------- CONTENT PREVIEW MODAL ----------
+function ContentPreviewModal({ item, onClose }: { item: ContentRecord; onClose: () => void }) {
+  useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); }; document.addEventListener('keydown', handler); return () => document.removeEventListener('keydown', handler); }, [onClose]);
+  const images = recordImages(item);
+  return <div className="fixed inset-0 z-[70] flex items-center justify-center bg-primary/40 p-3 sm:p-6" onClick={onClose}>
+    <div className="max-h-[88dvh] w-full max-w-3xl overflow-y-auto border border-border bg-card shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="flex items-start justify-between border-b border-border p-4 sm:p-6">
+        <div><Eyebrow>Preview</Eyebrow><h2 className="mt-1.5 font-display text-2xl text-primary sm:text-3xl">{item.title}</h2></div>
+        <button type="button" onClick={onClose} className="p-1 text-muted-foreground hover:text-primary"><X size={18} /></button>
+      </div>
+      <div className="p-4 sm:p-6 space-y-4">
+        {item.image && <img src={item.image} alt={item.title} className="h-48 w-full object-cover rounded-sm sm:h-64" />}
+        <div className="flex flex-wrap gap-2">
+          {item.category && <span className="rounded-sm border border-border px-2.5 py-1 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary">{item.category}</span>}
+          <span className={`rounded-sm border px-2.5 py-1 font-mono-ui text-[8px] uppercase tracking-[.1em] ${item.published ? 'border-green-200 bg-green-50 text-green-700' : 'border-muted text-muted-foreground'}`}>{item.published ? 'Published' : 'Draft'}</span>
+          {item.featured && <span className="rounded-sm border border-secondary/30 bg-secondary/10 px-2.5 py-1 font-mono-ui text-[8px] uppercase tracking-[.1em] text-secondary">Featured</span>}
+        </div>
+        <div><FieldLabel>Short description</FieldLabel><p className="mt-1 text-sm text-muted-foreground">{item.shortDescription || 'None'}</p></div>
+        <div><FieldLabel>Description</FieldLabel><p className="mt-1 whitespace-pre-line text-sm leading-7 text-foreground">{item.description || 'None'}</p></div>
+        {images.length > 1 && <div><FieldLabel>Gallery ({images.length} images)</FieldLabel><div className="mt-2 grid grid-cols-3 gap-2">{images.map((img, i) => <img key={i} src={img} alt="" className="h-20 w-full object-cover rounded-sm border border-border" />)}</div></div>}
+        {item.video && <div><FieldLabel>Video</FieldLabel><p className="mt-1 text-sm text-muted-foreground break-all">{item.video}</p></div>}
+        {Object.keys(item.meta || {}).length > 0 && <div><FieldLabel>Meta</FieldLabel><div className="mt-1 space-y-1">{Object.entries(item.meta).map(([k, v]) => <div key={k} className="flex gap-2 text-xs"><span className="font-mono text-muted-foreground">{k}:</span><span>{String(v)}</span></div>)}</div></div>}
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border"><div><FieldLabel>Display order</FieldLabel><p className="mt-1 text-sm">{item.displayOrder}</p></div><div><FieldLabel>Slug</FieldLabel><p className="mt-1 text-sm font-mono text-muted-foreground">{item.slug}</p></div></div>
+      </div>
+    </div>
+  </div>;
+}
+
+// ---------- ADMIN SHELL ----------
 function AdminShell() {
   const [, setLocation] = useLocation(); const session = useGetAdminSession(); const logout = useLogoutAdmin(); const [mobileNav, setMobileNav] = useState(false);
   useEffect(() => { if (!session.isLoading && !session.data?.authenticated) setLocation('/admin-login'); }, [session.isLoading, session.data?.authenticated, setLocation]);
   if (session.isLoading) return <LoadingPage />;
   if (!session.data?.authenticated) return null;
-  return <div className="min-h-[100dvh] bg-muted/40 text-foreground"><aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary text-primary-foreground transition-transform md:translate-x-0 ${mobileNav ? 'translate-x-0' : '-translate-x-full'}`}><div className="flex h-full flex-col"><div className="flex h-[64px] items-center justify-between border-b border-primary-foreground/15 px-5 sm:h-[76px] sm:px-6"><Link href="/admin" data-testid="link-admin-brand"><Mark light /></Link><button type="button" data-testid="button-close-admin-nav" onClick={() => setMobileNav(false)} className="p-1 md:hidden"><X size={18} /></button></div><div className="p-3 sm:p-4"><p className="px-3 pb-2.5 font-mono-ui text-[8px] uppercase tracking-[.13em] text-primary-foreground/40 sm:pb-3 sm:text-[9px] sm:tracking-[.15em]">Workspace</p><Link href="/admin" data-testid="link-admin-dashboard" className="flex items-center gap-2.5 bg-secondary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary sm:gap-3 sm:py-3 sm:text-[11px]"><LayoutDashboard size={14} /> Overview</Link></div><div className="mt-auto border-t border-primary-foreground/15 p-3 sm:p-4"><Link href="/?editor=1" data-testid="link-admin-public-site" className="mb-1.5 flex items-center gap-2.5 px-3 py-2.5 text-[9px] uppercase tracking-[.1em] text-primary-foreground/60 hover:text-secondary sm:mb-2 sm:gap-3 sm:py-3 sm:text-[10px] sm:tracking-[.12em]"><ArrowUpRight size={14} /> Public site</Link><button type="button" data-testid="button-admin-logout" onClick={() => logout.mutate(undefined, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getGetAdminSessionQueryKey() }); setLocation('/admin-login'); } })} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[9px] uppercase tracking-[.1em] text-primary-foreground/60 hover:text-secondary sm:gap-3 sm:py-3 sm:text-[10px] sm:tracking-[.12em]"><LogOut size={14} /> Sign out</button></div></div></aside>{mobileNav && <button type="button" aria-label="Close navigation" data-testid="button-admin-overlay" onClick={() => setMobileNav(false)} className="fixed inset-0 z-40 bg-primary/30 md:hidden" />}<div className="md:pl-64"><header className="sticky top-0 z-30 flex h-[64px] items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-md sm:h-[76px] sm:px-6"><button type="button" data-testid="button-toggle-admin-nav" onClick={() => setMobileNav(true)} className="p-1.5 text-primary md:hidden"><Menu size={18} /></button><div className="hidden items-center gap-3 sm:flex"><span className="font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">Admin workspace</span></div><div className="flex items-center gap-2.5 sm:gap-3"><ShieldCheck size={16} className="text-primary" /><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-primary sm:text-[10px]">Admin</span></div></header><div className="p-4 sm:p-6 lg:p-8"><AdminDashboard /></div></div></div>;
+  const navLinks = [
+    { href: '/admin', label: 'Overview', icon: <LayoutDashboard size={14} /> },
+  ];
+  return <div className="min-h-[100dvh] bg-muted/40 text-foreground"><aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary text-primary-foreground transition-transform md:translate-x-0 ${mobileNav ? 'translate-x-0' : '-translate-x-full'}`}><div className="flex h-full flex-col"><div className="flex h-[64px] items-center justify-between border-b border-primary-foreground/15 px-5 sm:h-[76px] sm:px-6"><Link href="/admin" data-testid="link-admin-brand"><Mark light /></Link><button type="button" data-testid="button-close-admin-nav" onClick={() => setMobileNav(false)} className="p-1 md:hidden"><X size={18} /></button></div><div className="flex-1 overflow-y-auto p-3 sm:p-4"><p className="px-3 pb-2.5 font-mono-ui text-[8px] uppercase tracking-[.13em] text-primary-foreground/40 sm:pb-3 sm:text-[9px] sm:tracking-[.15em]">Workspace</p>{navLinks.map(link => <Link key={link.href} href={link.href} data-testid={`link-admin-${link.label.toLowerCase()}`} className="flex items-center gap-2.5 bg-secondary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary sm:gap-3 sm:py-3 sm:text-[11px]">{link.icon} {link.label}</Link>)}
+      <p className="mt-4 px-3 pb-2 font-mono-ui text-[8px] uppercase tracking-[.13em] text-primary-foreground/40 sm:pb-2.5 sm:text-[9px]">Quick links</p>
+      <Link href="/?editor=1" className="flex items-center gap-2.5 px-3 py-2 text-[9px] uppercase tracking-[.1em] text-primary-foreground/60 hover:text-secondary sm:py-2.5 sm:text-[10px]"><Pencil size={12} /> Inline editor</Link>
+      <Link href="/" className="flex items-center gap-2.5 px-3 py-2 text-[9px] uppercase tracking-[.1em] text-primary-foreground/60 hover:text-secondary sm:py-2.5 sm:text-[10px]"><Globe size={12} /> Public site</Link></div>
+    <div className="border-t border-primary-foreground/15 p-3 sm:p-4"><button type="button" data-testid="button-admin-logout" onClick={() => logout.mutate(undefined, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getGetAdminSessionQueryKey() }); setLocation('/admin-login'); } })} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[9px] uppercase tracking-[.1em] text-primary-foreground/60 hover:text-secondary sm:gap-3 sm:py-3 sm:text-[10px] sm:tracking-[.12em]"><LogOut size={14} /> Sign out</button></div></div></aside>{mobileNav && <button type="button" aria-label="Close navigation overlay" onClick={() => setMobileNav(false)} className="fixed inset-0 z-40 bg-primary/30 md:hidden" />}<div className="md:ml-64"><div className="flex h-[64px] items-center gap-3 border-b border-border bg-card px-4 sm:h-[76px] sm:px-5 lg:px-10"><button type="button" data-testid="button-toggle-admin-nav" onClick={() => setMobileNav(!mobileNav)} className="p-2 md:hidden"><Menu size={18} /></button><div className="flex-1" /><span className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground sm:text-[9px]">Admin panel</span></div><main className="p-4 sm:p-5 lg:p-10"><AdminDashboard /></main></div></div>;
 }
 
+// ---------- ADMIN DASHBOARD ----------
 function AdminDashboard() {
   const [activeCollection, setActiveCollection] = useState<typeof ContentCollection[keyof typeof ContentCollection]>('products');
   const [editor, setEditor] = useState<ContentRecord | 'new' | null>(null);
+  const [previewItem, setPreviewItem] = useState<ContentRecord | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft' | 'featured'>('all');
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [showBulkBar, setShowBulkBar] = useState(false);
+
   const dashboard = useGetAdminDashboard(); const content = useListAdminContent({ collection: activeCollection }); const health = useHealthCheck();
   const seedSample = useSeedSampleData(); const qc = useQueryClient();
+  const bulkAction = useBulkContentAction(); const dupContent = useDuplicateContent();
   const items = content.data || []; const counts = dashboard.data?.counts || {};
-  const handleSeed = () => { if (window.confirm('Add 1 sample item to each collection (products, designs, machinery, services, faqs, blogs, timeline, categories)?')) { seedSample.mutate(undefined, { onSuccess: (result) => { alert(`Added ${result.added} new sample items.`); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: activeCollection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } }); } };
-  return <div className="space-y-6 sm:space-y-8"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:gap-5"><div><Eyebrow>Overview / control room</Eyebrow><h1 className="mt-2 font-display text-4xl tracking-[-.04em] text-primary sm:mt-3 sm:text-5xl">Good morning.</h1><p className="mt-2 text-[13px] text-muted-foreground sm:mt-3 sm:text-sm">Keep the public story accurate, useful and current.</p></div><div className="flex flex-wrap gap-2"><button type="button" data-testid="button-seed-sample" onClick={handleSeed} disabled={seedSample.isPending} className="flex items-center justify-center gap-2 border border-secondary bg-secondary/10 px-3.5 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-secondary hover:bg-secondary hover:text-primary sm:px-4 sm:py-3 sm:tracking-[.13em]"><Database size={14} /> {seedSample.isPending ? 'Seeding...' : 'Seed sample data'}</button><button type="button" data-testid="button-new-content-top" onClick={() => setEditor('new')} className="flex items-center justify-center gap-2 bg-primary px-3.5 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary sm:px-4 sm:py-3 sm:tracking-[.13em]"><Plus size={14} /> Add content</button></div></div><div className="grid gap-2.5 sm:grid-cols-3 sm:gap-3"><AdminMetric icon={<Images size={16} />} label="Published items" value={String(Object.values(counts).reduce((a, b) => a + b, 0) || '0')} /><AdminMetric icon={<Zap size={16} />} label="API status" value={health.isLoading ? 'checking' : health.data?.status || 'online'} /><AdminMetric icon={<Settings size={16} />} label="Editing collection" value={activeCollection} /></div><div className="grid gap-6 xl:grid-cols-[1fr_330px]"><section className="min-w-0 border border-border bg-card"><div className="flex flex-col justify-between gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:gap-4 sm:p-5"><div><Eyebrow>Content manager</Eyebrow><h2 className="mt-1.5 font-display text-2xl text-primary sm:mt-2 sm:text-3xl">{activeCollection}</h2></div><button type="button" data-testid="button-new-content" onClick={() => setEditor('new')} className="flex items-center justify-center gap-1.5 border border-primary px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.1em] text-primary hover:bg-primary hover:text-primary-foreground sm:gap-2 sm:px-3 sm:py-2 sm:text-[10px] sm:tracking-[.12em]"><Plus size={13} /> New entry</button></div><div className="flex gap-0.5 overflow-x-auto border-b border-border px-3 py-2.5 sm:gap-1 sm:px-5 sm:py-3">{collections.map(collection => <button type="button" key={collection} onClick={() => { setActiveCollection(collection); setEditor(null); }} data-testid={`button-collection-${collection}`} className={`whitespace-nowrap rounded-sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.1em] transition-colors sm:px-3 sm:py-2 sm:text-[10px] sm:tracking-[.12em] ${activeCollection === collection ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{collection}</button>)}</div>{content.isLoading ? <AdminListSkeleton /> : content.isError ? <ErrorState onRetry={() => content.refetch()} /> : items.length === 0 ? <div className="p-6 text-center text-sm text-muted-foreground">No entries in this collection yet.</div> : <div>{items.map(item => <AdminRow key={item.id} item={item} onEdit={() => setEditor(item)} />)}</div>}</section><SiteSettingsCard /><StatsEditor /></div>{editor !== null && <ContentEditor collection={activeCollection} record={editor === 'new' ? null : editor} onClose={() => setEditor(null)} />}</div>;
-}
-function AdminMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) { return <div className="border border-border bg-card p-4 sm:p-5"><div className="flex items-center justify-between text-primary"><span className="grid h-7 w-7 place-items-center bg-muted sm:h-8 sm:w-8">{icon}</span><ArrowUpRight size={13} /></div><p data-testid={`metric-${label.toLowerCase().replace(' ', '-')}`} className="mt-5 font-display text-2xl text-primary sm:mt-7 sm:text-3xl">{value}</p><p className="mt-0.5 font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground sm:mt-1 sm:text-[9px] sm:tracking-[.12em]">{label}</p></div>; }
-function AdminListSkeleton() { return <div className="space-y-px">{[1,2,3].map(item => <div key={item} className="flex gap-3 border-b border-border p-4 sm:gap-4 sm:p-5"><div className="h-12 w-12 animate-pulse bg-muted sm:h-14 sm:w-14" /><div className="flex-1 space-y-2.5"><div className="h-3 w-1/3 animate-pulse bg-muted" /><div className="h-3 w-2/3 animate-pulse bg-muted" /></div></div>)}</div>; }
-function ErrorState({ onRetry }: { onRetry: () => void }) { return <div className="border-l-2 border-destructive bg-destructive/10 p-4 sm:p-5"><p className="text-[13px] text-destructive sm:text-sm">We could not load this collection.</p><button type="button" data-testid="button-retry-content" onClick={onRetry} className="mt-3 text-[10px] font-bold uppercase tracking-[.12em] text-destructive underline sm:mt-4">Try again</button></div>; }
-function AdminRow({ item, onEdit }: { item: ContentRecord; onEdit: () => void }) {
-  const remove = useDeleteAdminContent(); const update = useUpdateAdminContent(); const qc = useQueryClient();
-  const deleteItem = () => { if (window.confirm(`Delete "${item.title}"?`)) remove.mutate({ id: item.id }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); } }); };
-  const togglePublished = () => update.mutate({ id: item.id, data: { published: !item.published } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } });
-  const toggleFeatured = () => update.mutate({ id: item.id, data: { featured: !item.featured } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } });
-  return <div data-testid={`row-content-${item.id}`} className="flex flex-col gap-3 border-b border-border p-4 transition-colors hover:bg-muted/50 sm:flex-row sm:items-center sm:gap-4 sm:p-5"><div className="h-12 w-12 shrink-0 overflow-hidden bg-muted sm:h-14 sm:w-14"><img src={recordImage(item)} alt={item.title} className="h-full w-full object-cover mix-blend-multiply" /></div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-1.5 sm:gap-2"><h3 className="truncate font-display text-lg text-primary sm:text-xl">{item.title}</h3><span className={`font-mono-ui text-[7px] uppercase tracking-[.08em] sm:text-[8px] sm:tracking-[.1em] ${item.published ? 'text-accent-foreground' : 'text-muted-foreground'}`}>{item.published ? 'Published' : 'Draft'}</span>{item.featured && <span className="font-mono-ui text-[7px] uppercase tracking-[.08em] text-secondary sm:text-[8px] sm:tracking-[.1em]">★ Featured</span>}</div><p className="mt-0.5 truncate text-xs text-muted-foreground">{item.shortDescription || 'No short description'}</p></div><div className="flex items-center gap-1.5 sm:gap-2"><button type="button" data-testid={`button-toggle-featured-${item.id}`} onClick={toggleFeatured} title={item.featured ? 'Remove from home page' : 'Show on home page'} className={`grid h-7 w-7 place-items-center border sm:h-8 sm:w-8 ${item.featured ? 'border-secondary bg-secondary/10 text-secondary' : 'border-border text-muted-foreground hover:border-secondary hover:text-secondary'}`}><Star size={13} fill={item.featured ? 'currentColor' : 'none'} /></button><button type="button" data-testid={`button-toggle-published-${item.id}`} onClick={togglePublished} className="border border-border px-2.5 py-1.5 font-mono-ui text-[8px] uppercase tracking-[.08em] text-muted-foreground hover:border-primary hover:text-primary sm:px-3 sm:py-2 sm:text-[9px] sm:tracking-[.1em]">{item.published ? 'Unpublish' : 'Publish'}</button><button type="button" data-testid={`button-edit-content-${item.id}`} onClick={onEdit} className="grid h-7 w-7 place-items-center border border-border text-primary hover:bg-muted sm:h-8 sm:w-8"><Pencil size={13} /></button><button type="button" data-testid={`button-delete-content-${item.id}`} onClick={deleteItem} className="grid h-7 w-7 place-items-center border border-border text-destructive hover:bg-destructive/10 sm:h-8 sm:w-8"><Trash2 size={13} /></button></div></div>;
+
+  const filteredItems = items.filter(item => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const match = item.title.toLowerCase().includes(q) || item.shortDescription?.toLowerCase().includes(q) || item.category?.toLowerCase().includes(q) || item.slug?.toLowerCase().includes(q);
+      if (!match) return false;
+    }
+    if (filterStatus === 'published' && !item.published) return false;
+    if (filterStatus === 'draft' && item.published) return false;
+    if (filterStatus === 'featured' && !item.featured) return false;
+    return true;
+  });
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  };
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredItems.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(filteredItems.map(i => i.id)));
+  };
+  const runBulk = (action: 'publish' | 'unpublish' | 'feature' | 'unfeature' | 'delete') => {
+    if (!selectedIds.size) return;
+    const label = { publish: 'Publish', unpublish: 'Unpublish', feature: 'Feature', unfeature: 'Unfeature', delete: 'Delete' }[action];
+    if (!window.confirm(`${label} ${selectedIds.size} items?`)) return;
+    bulkAction.mutate({ ids: Array.from(selectedIds), action }, { onSuccess: () => {
+      setSelectedIds(new Set()); setShowBulkBar(false);
+      qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() });
+      qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: activeCollection }) });
+      qc.invalidateQueries({ queryKey: getGetSiteQueryKey() });
+    }});
+  };
+  const handleDuplicate = (id: number) => {
+    dupContent.mutate(id, { onSuccess: () => {
+      qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() });
+      qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: activeCollection }) });
+    }});
+  };
+  const handleSeed = () => { if (window.confirm('Add 1 sample item to each collection?')) { seedSample.mutate(undefined, { onSuccess: (result) => { alert(`Added ${result.added} new sample items.`); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: activeCollection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } }); } };
+
+  const totalItems = Object.values(counts).reduce((a, b) => a + b, 0) || 0;
+  const publishedCount = items.filter(i => i.published).length;
+  const draftCount = items.filter(i => !i.published).length;
+  const featuredCount = items.filter(i => i.featured).length;
+
+  return <div className="space-y-6 sm:space-y-8">
+    {/* Header */}
+    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:gap-5">
+      <div><Eyebrow>Admin control room</Eyebrow><h1 className="mt-2 font-display text-4xl tracking-[-.04em] text-primary sm:mt-3 sm:text-5xl">Dashboard</h1><p className="mt-2 text-[13px] text-muted-foreground sm:mt-3 sm:text-sm">Manage all content, settings and site data from here.</p></div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={handleSeed} disabled={seedSample.isPending} className="flex items-center justify-center gap-2 border border-secondary bg-secondary/10 px-3.5 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-secondary hover:bg-secondary hover:text-primary sm:px-4 sm:py-3 sm:tracking-[.13em]"><Database size={14} /> {seedSample.isPending ? 'Seeding...' : 'Seed data'}</button>
+        <button type="button" onClick={() => setEditor('new')} className="flex items-center justify-center gap-2 bg-primary px-3.5 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary sm:px-4 sm:py-3 sm:tracking-[.13em]"><Plus size={14} /> Add content</button>
+      </div>
+    </div>
+
+    {/* Stats grid */}
+    <div className="grid gap-2.5 grid-cols-2 sm:grid-cols-5 sm:gap-3">
+      <AdminMetric icon={<Images size={16} />} label="Total items" value={String(totalItems)} />
+      <AdminMetric icon={<Check size={16} />} label="Published" value={String(publishedCount)} />
+      <AdminMetric icon={<FileText size={16} />} label="Drafts" value={String(draftCount)} />
+      <AdminMetric icon={<Star size={16} />} label="Featured" value={String(featuredCount)} />
+      <AdminMetric icon={<Zap size={16} />} label="API status" value={health.isLoading ? '...' : health.data?.status || 'ok'} />
+    </div>
+
+    {/* Main content */}
+    <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+      <section className="min-w-0 border border-border bg-card">
+        {/* Collection tabs */}
+        <div className="flex flex-wrap gap-1 border-b border-border p-3 sm:p-4">{collections.map(c => <button type="button" key={c} onClick={() => { setActiveCollection(c); setEditor(null); setSelectedIds(new Set()); setSearchQuery(''); }} className={`rounded-sm px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[.1em] transition-colors sm:px-3 sm:text-[10px] sm:tracking-[.12em] ${activeCollection === c ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-primary'}`}>{c}</button>)}</div>
+
+        {/* Search and filter bar */}
+        <div className="flex flex-col gap-2 border-b border-border p-3 sm:flex-row sm:items-center sm:gap-3 sm:p-4">
+          <div className="relative flex-1"><Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" /><input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search by title, category, slug..." className="w-full rounded-sm border border-border bg-muted/50 py-2 pl-8 pr-3 text-xs outline-none focus:border-primary" /></div>
+          <div className="flex gap-1.5">
+            {(['all', 'published', 'draft', 'featured'] as const).map(s => <button key={s} type="button" onClick={() => setFilterStatus(s)} className={`rounded-sm px-2 py-1.5 text-[8px] font-bold uppercase tracking-[.1em] transition-colors sm:text-[9px] ${filterStatus === s ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-primary'}`}>{s}</button>)}
+          </div>
+        </div>
+
+        {/* Bulk actions bar */}
+        {selectedIds.size > 0 && <div className="flex items-center gap-2 border-b border-secondary bg-secondary/10 px-3 py-2.5 sm:px-4">
+          <span className="text-[10px] font-bold uppercase tracking-[.1em] text-secondary">{selectedIds.size} selected</span>
+          <div className="flex-1" />
+          <button type="button" onClick={() => runBulk('publish')} className="rounded-sm bg-primary px-2 py-1 text-[8px] font-bold uppercase text-primary-foreground hover:bg-primary/80">Publish</button>
+          <button type="button" onClick={() => runBulk('unpublish')} className="rounded-sm bg-muted px-2 py-1 text-[8px] font-bold uppercase text-muted-foreground hover:bg-muted/80">Unpublish</button>
+          <button type="button" onClick={() => runBulk('feature')} className="rounded-sm bg-secondary/20 px-2 py-1 text-[8px] font-bold uppercase text-secondary hover:bg-secondary/30">Feature</button>
+          <button type="button" onClick={() => runBulk('delete')} className="rounded-sm bg-destructive/10 px-2 py-1 text-[8px] font-bold uppercase text-destructive hover:bg-destructive/20">Delete</button>
+          <button type="button" onClick={() => { setSelectedIds(new Set()); }} className="p-1 text-muted-foreground hover:text-primary"><X size={12} /></button>
+        </div>}
+
+        {/* Content list */}
+        <div>
+          {content.isLoading ? <AdminListSkeleton /> : content.isError ? <ErrorState onRetry={() => content.refetch()} /> :
+            filteredItems.length === 0 ? <div className="p-5 text-center text-[13px] text-muted-foreground sm:p-8">{searchQuery || filterStatus !== 'all' ? 'No items match your search or filter.' : 'No items yet. Add your first entry.'}</div> :
+            <div>
+              {/* Select all header */}
+              <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-2 sm:px-5">
+                <button type="button" onClick={toggleSelectAll} className="text-muted-foreground hover:text-primary">
+                  {selectedIds.size === filteredItems.length && filteredItems.length > 0 ? <CheckSquare size={14} /> : <Square size={14} />}
+                </button>
+                <span className="text-[9px] font-bold uppercase tracking-[.1em] text-muted-foreground">Select all ({filteredItems.length})</span>
+              </div>
+              {filteredItems.map(item => <AdminRow key={item.id} item={item} selected={selectedIds.has(item.id)} onSelect={() => toggleSelect(item.id)} onEdit={() => setEditor(item)} onPreview={() => setPreviewItem(item)} onDuplicate={() => handleDuplicate(item.id)} />)}
+            </div>}
+        </div>
+      </section>
+
+      {/* Sidebar */}
+      <div className="space-y-5">
+        <SiteSettingsCard />
+        <StatsEditor />
+      </div>
+    </div>
+
+    {/* Modals */}
+    {editor !== null && <ContentEditor collection={activeCollection} record={editor === 'new' ? null : editor} onClose={() => setEditor(null)} />}
+    {previewItem && <ContentPreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />}
+  </div>;
 }
 
+function AdminMetric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) { return <div className="border border-border bg-card p-4 sm:p-5"><div className="flex items-center justify-between text-primary"><span className="grid h-7 w-7 place-items-center bg-muted sm:h-8 sm:w-8">{icon}</span></div><p data-testid={`metric-${label.toLowerCase().replace(' ', '-')}`} className="mt-4 font-display text-2xl text-primary sm:mt-5 sm:text-3xl">{value}</p><p className="mt-0.5 font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground sm:mt-1 sm:text-[9px] sm:tracking-[.12em]">{label}</p></div>; }
+function AdminListSkeleton() { return <div className="space-y-px">{[1,2,3].map(item => <div key={item} className="flex gap-3 border-b border-border p-4 sm:gap-4 sm:p-5"><div className="h-12 w-12 animate-pulse bg-muted sm:h-14 sm:w-14" /><div className="flex-1 space-y-2.5"><div className="h-3 w-1/3 animate-pulse bg-muted" /><div className="h-3 w-2/3 animate-pulse bg-muted" /></div></div>)}</div>; }
+function ErrorState({ onRetry }: { onRetry: () => void }) { return <div className="border-l-2 border-destructive bg-destructive/10 p-4 sm:p-5"><p className="text-[13px] text-destructive sm:text-sm">We could not load this collection.</p><button type="button" data-testid="button-retry-content" onClick={onRetry} className="mt-3 text-[10px] font-bold uppercase tracking-[.12em] text-destructive underline sm:mt-4">Try again</button></div>; }
+
+// ---------- ADMIN ROW ----------
+function AdminRow({ item, selected, onSelect, onEdit, onPreview, onDuplicate }: { item: ContentRecord; selected: boolean; onSelect: () => void; onEdit: () => void; onPreview: () => void; onDuplicate: () => void }) {
+  const remove = useDeleteAdminContent(); const update = useUpdateAdminContent(); const qc = useQueryClient();
+  const [showActions, setShowActions] = useState(false);
+  const deleteItem = () => { setShowActions(false); if (window.confirm(`Delete "${item.title}"?`)) remove.mutate({ id: item.id }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); } }); };
+  const togglePublished = () => update.mutate({ id: item.id, data: { published: !item.published } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } });
+  const toggleFeatured = () => update.mutate({ id: item.id, data: { featured: !item.featured } }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection: item.collection }) }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } });
+
+  return <div data-testid={`row-content-${item.id}`} className={`flex flex-col gap-3 border-b border-border p-4 transition-colors sm:flex-row sm:items-center sm:gap-4 sm:p-5 ${selected ? 'bg-primary/5' : 'hover:bg-muted/50'}`}>
+    <button type="button" onClick={onSelect} className="text-muted-foreground hover:text-primary shrink-0">
+      {selected ? <CheckSquare size={14} /> : <Square size={14} />}
+    </button>
+    <div className="h-12 w-12 shrink-0 overflow-hidden bg-muted sm:h-14 sm:w-14"><img src={recordImage(item)} alt={item.title} className="h-full w-full object-cover mix-blend-multiply" onError={e => { (e.target as HTMLImageElement).src = '/fabric-detail.jpg'; }} /></div>
+    <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <h3 className="truncate font-display text-lg text-primary sm:text-xl">{item.title}</h3>
+        <span className={`rounded-sm px-1.5 py-0.5 font-mono-ui text-[7px] uppercase tracking-[.08em] sm:text-[8px] sm:tracking-[.1em] ${item.published ? 'bg-green-100 text-green-700' : 'bg-muted text-muted-foreground'}`}>{item.published ? 'Published' : 'Draft'}</span>
+        {item.featured && <span className="rounded-sm bg-secondary/10 px-1.5 py-0.5 font-mono-ui text-[7px] uppercase tracking-[.08em] text-secondary sm:text-[8px] sm:tracking-[.1em]">Featured</span>}
+      </div>
+      <p className="mt-0.5 truncate text-xs text-muted-foreground">{item.shortDescription || 'No description'}</p>
+      {item.category && <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground"><Tag size={9} /> {item.category}</p>}
+    </div>
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      <button type="button" onClick={toggleFeatured} title={item.featured ? 'Remove from home' : 'Show on home'} className={`grid h-7 w-7 place-items-center border sm:h-8 sm:w-8 ${item.featured ? 'border-secondary bg-secondary/10 text-secondary' : 'border-border text-muted-foreground hover:border-secondary hover:text-secondary'}`}><Star size={13} fill={item.featured ? 'currentColor' : 'none'} /></button>
+      <button type="button" onClick={togglePublished} className="border border-border px-2 py-1.5 font-mono-ui text-[8px] uppercase tracking-[.08em] text-muted-foreground hover:border-primary hover:text-primary sm:px-2.5 sm:py-2 sm:text-[9px] sm:tracking-[.1em]">{item.published ? 'Unpublish' : 'Publish'}</button>
+      <button type="button" onClick={onPreview} title="Preview" className="grid h-7 w-7 place-items-center border border-border text-muted-foreground hover:border-primary hover:text-primary sm:h-8 sm:w-8"><Eye size={13} /></button>
+      <button type="button" onClick={onEdit} title="Edit" className="grid h-7 w-7 place-items-center border border-border text-primary hover:bg-primary hover:text-primary-foreground sm:h-8 sm:w-8"><Pencil size={13} /></button>
+      <div className="relative">
+        <button type="button" onClick={() => setShowActions(!showActions)} className="grid h-7 w-7 place-items-center border border-border text-muted-foreground hover:text-primary sm:h-8 sm:w-8"><ChevronDown size={13} /></button>
+        {showActions && <div className="absolute right-0 top-full z-20 mt-1 w-36 border border-border bg-card shadow-lg">
+          <button type="button" onClick={() => { setShowActions(false); onDuplicate(); }} className="flex w-full items-center gap-2 px-3 py-2 text-[10px] text-muted-foreground hover:bg-muted hover:text-primary"><Copy size={11} /> Duplicate</button>
+          <button type="button" onClick={() => { setShowActions(false); onEdit(); }} className="flex w-full items-center gap-2 px-3 py-2 text-[10px] text-muted-foreground hover:bg-muted hover:text-primary"><Pencil size={11} /> Edit</button>
+          <button type="button" onClick={deleteItem} disabled={remove.isPending} className="flex w-full items-center gap-2 px-3 py-2 text-[10px] text-destructive hover:bg-destructive/10"><Trash2 size={11} /> Delete</button>
+        </div>}
+      </div>
+    </div>
+  </div>;
+}
+
+// ---------- SITE SETTINGS CARD ----------
 function SiteSettingsCard() {
   const { data: site } = useGetSite(); const settings = siteSettings(site); const update = useUpdateAdminSite(); const qc = useQueryClient(); const [open, setOpen] = useState(false); const [form, setForm] = useState<SiteSettingsUpdate>({ ...settings });
   useEffect(() => { if (site?.settings) setForm({ ...site.settings }); }, [site?.settings]);
   const submit = (event: FormEvent) => { event.preventDefault(); update.mutate({ data: form }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); setOpen(false); } }); };
-  return <section className="h-fit border border-border bg-card"><button type="button" data-testid="button-toggle-site-settings" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between p-4 text-left sm:p-5"><span><Eyebrow>Site settings</Eyebrow><span className="mt-1.5 block font-display text-xl text-primary sm:mt-2 sm:text-2xl">Public details</span></span>{open ? <X size={16} /> : <SlidersHorizontal size={16} />}</button>{open && <form onSubmit={submit} className="border-t border-border p-4 sm:p-5"><div className="space-y-3.5 sm:space-y-4"><p className="font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">General</p>{(['brandName','location','phone','whatsapp','email','officeAddress','factoryAddress','businessHours','whatsappMessage'] as const).map(field => <label key={field} className="block"><span className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-muted-foreground sm:text-[8px] sm:tracking-[.12em]">{field.replace(/[A-Z]/g, match => ` ${match}`).trim()}</span><input value={form[field] || ''} onChange={event => setForm({ ...form, [field]: event.target.value })} data-testid={`input-site-${field}`} className="mt-1 w-full border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary sm:py-2" /></label>)}<p className="mt-3 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">Hero images (URL paths)</p>{(['heroImage','heroVideo','aboutHeroImage','servicesHeroImage','productsHeroImage','designsHeroImage','excellenceHeroImage','contactHeroImage'] as const).map(field => <label key={field} className="block"><span className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-muted-foreground sm:text-[8px] sm:tracking-[.12em]">{field.replace(/([A-Z])/g, ' $1').replace(/^hero/, 'Home hero').trim()}</span><input value={form[field] || ''} onChange={event => setForm({ ...form, [field]: event.target.value })} data-testid={`input-site-${field}`} placeholder="/image-name.jpg" className="mt-1 w-full border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary sm:py-2" /></label>)}<p className="mt-3 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">Founder / CEO</p>{(['founderName','founderTitle','founderQuote','founderImage'] as const).map(field => <label key={field} className="block"><span className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-muted-foreground sm:text-[8px] sm:tracking-[.12em]">{field.replace(/([A-Z])/g, ' $1').replace(/^founder/, '').trim()}</span><input value={form[field] || ''} onChange={event => setForm({ ...form, [field]: event.target.value })} data-testid={`input-site-${field}`} placeholder={field === 'founderImage' ? '/founder.jpg' : ''} className="mt-1 w-full border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary sm:py-2" /></label>)}</div><button type="submit" disabled={update.isPending} data-testid="button-save-site-settings" className="mt-5 flex w-full items-center justify-center gap-2 bg-primary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary sm:mt-6">{update.isPending ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} Save details</button></form>}</section>;
+  const setField = (field: keyof SiteSettingsUpdate, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  return <section className="h-fit border border-border bg-card"><button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between p-4 text-left sm:p-5"><span><Eyebrow>Site settings</Eyebrow><span className="mt-1.5 block font-display text-xl text-primary sm:mt-2 sm:text-2xl">Public details</span></span>{open ? <X size={16} /> : <SlidersHorizontal size={16} />}</button>
+  {open && <form onSubmit={submit} className="border-t border-border p-4 sm:p-5">
+    <div className="space-y-5">
+      <div><p className="mb-3 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">General information</p>
+        <div className="space-y-3">{(['brandName','location','phone','whatsapp','email','officeAddress','factoryAddress','businessHours','whatsappMessage'] as const).map(field => <label key={field} className="block"><FieldLabel>{field.replace(/[A-Z]/g, match => ` ${match}`).trim()}</FieldLabel><input value={form[field] || ''} onChange={e => setField(field, e.target.value)} className="editor-input mt-1" /></label>)}</div></div>
+      <div className="border-t border-border pt-4"><p className="mb-3 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">Hero images</p>
+        <div className="space-y-4">{(['heroImage','aboutHeroImage','servicesHeroImage','productsHeroImage','designsHeroImage','excellenceHeroImage','contactHeroImage'] as const).map(field => <ImageUpload key={field} value={form[field] || ''} onChange={v => setField(field, v)} label={field.replace(/([A-Z])/g, ' $1').replace(/^hero/, 'Home hero').trim()} />)}</div></div>
+      <div className="border-t border-border pt-4"><p className="mb-3 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px]">Founder</p>
+        <div className="space-y-3">{(['founderName','founderTitle','founderQuote'] as const).map(field => <label key={field} className="block"><FieldLabel>{field.replace(/([A-Z])/g, ' $1').trim()}</FieldLabel><input value={form[field] || ''} onChange={e => setField(field, e.target.value)} className="editor-input mt-1" /></label>)}
+        <ImageUpload value={form.founderImage || ''} onChange={v => setField('founderImage', v)} label="Founder photo" /></div></div>
+    </div>
+    <div className="mt-5 flex gap-2 sm:mt-6"><button type="submit" data-testid="button-save-site-settings" disabled={update.isPending} className="flex flex-1 items-center justify-center gap-2 bg-primary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary sm:py-3"><Save size={14} /> {update.isPending ? 'Saving...' : 'Save settings'}</button></div>
+  </form>}</section>;
 }
 
+// ---------- STATS EDITOR ----------
 function StatsEditor() {
   const { data: site } = useGetSite(); const stats = site?.stats || []; const update = useUpdateAdminSite(); const qc = useQueryClient(); const [open, setOpen] = useState(false);
   const [form, setForm] = useState(stats.map((s: { value: string; label: string; displayOrder: number }) => ({ ...s })));
   useEffect(() => { if (site?.stats) setForm(site.stats.map((s: { value: string; label: string; displayOrder: number }) => ({ ...s }))); }, [site?.stats]);
   const updateStat = (index: number, field: string, value: string) => { const next = [...form]; next[index] = { ...next[index], [field]: value }; setForm(next); };
-  return <section className="h-fit border border-border bg-card"><button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between p-4 text-left sm:p-5"><span><Eyebrow>Factory stats</Eyebrow><span className="mt-1.5 block font-display text-xl text-primary sm:mt-2 sm:text-2xl">Statistics</span></span>{open ? <X size={16} /> : <SlidersHorizontal size={16} />}</button>{open && <div className="border-t border-border p-4 sm:p-5"><div className="space-y-3">{form.map((stat: { value: string; label: string; displayOrder: number }, i: number) => <div key={i} className="grid grid-cols-[1fr_1fr_60px] gap-2"><input value={stat.value} onChange={e => updateStat(i, 'value', e.target.value)} className="border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary" placeholder="Value" /><input value={stat.label} onChange={e => updateStat(i, 'label', e.target.value)} className="border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary" placeholder="Label" /><input value={String(stat.displayOrder)} onChange={e => updateStat(i, 'displayOrder', e.target.value)} className="border-b border-border bg-transparent py-1.5 text-xs outline-none focus:border-primary" placeholder="#" /></div>)}</div><button type="button" onClick={() => { update.mutate({ data: {} }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } }); }} className="mt-4 flex w-full items-center justify-center gap-2 bg-primary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary"><Save size={14} /> Save stats</button></div>}</section>;
+  const addStat = () => setForm([...form, { value: '', label: '', displayOrder: form.length + 1 }]);
+  const removeStat = (index: number) => setForm(form.filter((_, i) => i !== index));
+  return <section className="h-fit border border-border bg-card"><button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center justify-between p-4 text-left sm:p-5"><span><Eyebrow>Factory stats</Eyebrow><span className="mt-1.5 block font-display text-xl text-primary sm:mt-2 sm:text-2xl">Statistics</span></span>{open ? <X size={16} /> : <SlidersHorizontal size={16} />}</button>{open && <div className="border-t border-border p-4 sm:p-5"><div className="space-y-3">{form.map((stat: { value: string; label: string; displayOrder: number }, i: number) => <div key={i} className="grid grid-cols-[1fr_1fr_50px_28px] items-end gap-2"><label className="block"><FieldLabel>Value</FieldLabel><input value={stat.value} onChange={e => updateStat(i, 'value', e.target.value)} className="editor-input mt-1" placeholder="100+" /></label><label className="block"><FieldLabel>Label</FieldLabel><input value={stat.label} onChange={e => updateStat(i, 'label', e.target.value)} className="editor-input mt-1" placeholder="Machines" /></label><label className="block"><FieldLabel>#</FieldLabel><input value={String(stat.displayOrder)} onChange={e => updateStat(i, 'displayOrder', e.target.value)} className="editor-input mt-1" /></label><button type="button" onClick={() => removeStat(i)} className="mb-2 text-muted-foreground hover:text-destructive"><Trash2 size={12} /></button></div>)}</div>
+    <button type="button" onClick={addStat} className="mt-2 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[.1em] text-primary hover:text-primary/80"><Plus size={12} /> Add stat</button>
+    <button type="button" onClick={() => { update.mutate({ data: {} }, { onSuccess: () => { qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); } }); }} className="mt-4 flex w-full items-center justify-center gap-2 bg-primary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary"><Save size={14} /> Save stats</button></div>}</section>;
 }
 
+// ---------- CONTENT EDITOR (ENHANCED) ----------
 function ContentEditor({ collection, record, onClose }: { collection: typeof ContentCollection[keyof typeof ContentCollection]; record: ContentRecord | null; onClose: () => void }) {
-  const create = useCreateAdminContent(); const update = useUpdateAdminContent(); const qc = useQueryClient(); const [form, setForm] = useState<ContentInput>({ collection, slug: record?.slug || '', title: record?.title || '', shortDescription: record?.shortDescription || '', description: record?.description || '', category: record?.category || '', image: record?.image || '', published: record?.published ?? false, featured: record?.featured ?? false, displayOrder: record?.displayOrder ?? 0 });
-  const set = (key: keyof ContentInput, value: string | boolean | number) => setForm(previous => ({ ...previous, [key]: value }));
-  const submit = (event: FormEvent) => { event.preventDefault(); if (!form.title || !form.description) return; const finish = () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection }) }); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); onClose(); }; if (record) { const { collection: _, ...data } = form; update.mutate({ id: record.id, data: data as ContentUpdate }, { onSuccess: finish }); } else create.mutate({ data: form }, { onSuccess: finish }); };
+  const create = useCreateAdminContent(); const update = useUpdateAdminContent(); const qc = useQueryClient();
+  const { data: categories } = useGetCategories({ collection });
+  const existingCategories = categories?.[collection] || [];
+
+  const [form, setForm] = useState<ContentInput>({
+    collection, slug: record?.slug || '', title: record?.title || '',
+    shortDescription: record?.shortDescription || '', description: record?.description || '',
+    category: record?.category || '', image: record?.image || '',
+    images: record?.images || [], video: record?.video || null,
+    published: record?.published ?? false, featured: record?.featured ?? false,
+    displayOrder: record?.displayOrder ?? 0, meta: record?.meta || {},
+  });
+  const [newCategory, setNewCategory] = useState('');
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [metaKey, setMetaKey] = useState('');
+  const [metaValue, setMetaValue] = useState('');
+  const [activeTab, setActiveTab] = useState<'basic' | 'images' | 'meta'>('basic');
+
+  const set = (key: keyof ContentInput, value: string | boolean | number | string[] | null | Record<string, unknown>) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const autoSlug = form.title ? form.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 80) : '';
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!form.title || !form.description) return;
+    const payload = { ...form, slug: form.slug || autoSlug };
+    const finish = () => { qc.invalidateQueries({ queryKey: getListAdminContentQueryKey({ collection }) }); qc.invalidateQueries({ queryKey: getGetAdminDashboardQueryKey() }); qc.invalidateQueries({ queryKey: getGetSiteQueryKey() }); onClose(); };
+    if (record) { const { collection: _, ...data } = payload; update.mutate({ id: record.id, data: data as ContentUpdate }, { onSuccess: finish }); }
+    else create.mutate({ data: payload }, { onSuccess: finish });
+  };
   const pending = create.isPending || update.isPending;
-  return <div className="fixed inset-0 z-[60] flex items-end justify-center bg-primary/30 p-0 sm:items-center sm:p-5"><div className="max-h-[92dvh] w-full max-w-2xl overflow-y-auto border border-border bg-card shadow-2xl"><div className="flex items-start justify-between border-b border-border p-4 sm:p-5 sm:p-7"><div><Eyebrow>{record ? 'Edit entry' : 'New entry'} / {collection}</Eyebrow><h2 className="mt-1.5 font-display text-2xl text-primary sm:mt-2 sm:text-3xl">{record ? record.title : 'Add to the library'}</h2></div><button type="button" data-testid="button-close-content-editor" onClick={onClose} className="p-1 text-muted-foreground hover:text-primary"><X size={18} /></button></div><form onSubmit={submit} className="grid gap-4 p-4 sm:grid-cols-2 sm:gap-5 sm:p-5 sm:p-7"><label className="sm:col-span-2"><FieldLabel>Title</FieldLabel><input required value={form.title} onChange={e => set('title', e.target.value)} data-testid="input-content-title" className="editor-input" /></label><label><FieldLabel>Slug</FieldLabel><input value={form.slug || ''} onChange={e => set('slug', e.target.value)} data-testid="input-content-slug" className="editor-input" placeholder="auto-generated if blank" /></label><label><FieldLabel>Category</FieldLabel><input value={form.category || ''} onChange={e => set('category', e.target.value)} data-testid="input-content-category" className="editor-input" /></label><label className="sm:col-span-2"><FieldLabel>Short description</FieldLabel><input required value={form.shortDescription} onChange={e => set('shortDescription', e.target.value)} data-testid="input-content-short-description" className="editor-input" /></label><label className="sm:col-span-2"><FieldLabel>Description</FieldLabel><textarea required rows={5} value={form.description} onChange={e => set('description', e.target.value)} data-testid="input-content-description" className="editor-input resize-y" /></label><label><FieldLabel>Primary image URL</FieldLabel><input value={form.image || ''} onChange={e => set('image', e.target.value)} data-testid="input-content-image" className="editor-input" placeholder="https://..." /></label><label><FieldLabel>Display order</FieldLabel><input type="number" value={form.displayOrder || 0} onChange={e => set('displayOrder', Number(e.target.value))} data-testid="input-content-display-order" className="editor-input" /></label><div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-4"><label className="flex items-center gap-2"><input type="checkbox" checked={form.published || false} onChange={e => set('published', e.target.checked)} data-testid="input-content-published" className="accent-primary" /><span className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground sm:text-[9px]">Published</span></label><label className="flex items-center gap-2"><input type="checkbox" checked={form.featured || false} onChange={e => set('featured', e.target.checked)} data-testid="input-content-featured" className="accent-primary" /><span className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground sm:text-[9px]">Featured</span></label></div><div className="flex gap-2"><button type="button" onClick={onClose} className="px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground hover:text-primary">Cancel</button><button type="submit" disabled={pending || !form.title || !form.description} data-testid="button-save-content" className="flex items-center justify-center gap-1.5 bg-primary px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary disabled:opacity-50">{pending ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />} {record ? 'Update' : 'Create'}</button></div></div></form></div></div>;
+
+  const addMeta = () => { if (metaKey.trim()) { set('meta', { ...(form.meta || {}), [metaKey.trim()]: metaValue }); setMetaKey(''); setMetaValue(''); } };
+  const removeMeta = (key: string) => { const m = { ...(form.meta || {}) }; delete m[key]; set('meta', m); };
+
+  return <div className="fixed inset-0 z-[60] flex items-end justify-center bg-primary/30 p-0 sm:items-center sm:p-5">
+    <div className="max-h-[92dvh] w-full max-w-3xl overflow-y-auto border border-border bg-card shadow-2xl">
+      <div className="flex items-start justify-between border-b border-border p-4 sm:p-6">
+        <div><Eyebrow>{record ? 'Edit' : 'New'} / {collection}</Eyebrow><h2 className="mt-1.5 font-display text-2xl text-primary sm:text-3xl">{record ? record.title : `Add to ${collection}`}</h2></div>
+        <button type="button" onClick={onClose} className="p-1 text-muted-foreground hover:text-primary"><X size={18} /></button>
+      </div>
+
+      {/* Tab navigation */}
+      <div className="flex gap-0 border-b border-border px-4 sm:px-6">
+        {([['basic', 'Basic info', Type], ['images', 'Images', ImagePlus], ['meta', 'Meta & SEO', AlignLeft]] as const).map(([key, label, Icon]) => <button key={key} type="button" onClick={() => setActiveTab(key)} className={`flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-[9px] font-bold uppercase tracking-[.1em] transition-colors sm:text-[10px] ${activeTab === key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-primary'}`}><Icon size={12} /> {label}</button>)}
+      </div>
+
+      <form onSubmit={submit} className="p-4 sm:p-6">
+        {activeTab === 'basic' && <div className="space-y-4">
+          <label><FieldLabel>Title *</FieldLabel><input required value={form.title} onChange={e => set('title', e.target.value)} className="editor-input mt-1" /></label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label><FieldLabel>Slug</FieldLabel><input value={form.slug || ''} onChange={e => set('slug', e.target.value)} className="editor-input mt-1" placeholder={autoSlug || 'auto-generated'} /></label>
+            <div>
+              <div className="flex items-end justify-between"><FieldLabel>Category</FieldLabel>{!showNewCategory && <button type="button" onClick={() => setShowNewCategory(true)} className="text-[8px] font-bold uppercase tracking-[.1em] text-primary hover:text-primary/80">+ New</button>}</div>
+              {showNewCategory ? <div className="mt-1 flex gap-1.5"><input value={newCategory} onChange={e => setNewCategory(e.target.value)} placeholder="New category name" className="editor-input flex-1" /><button type="button" onClick={() => { if (newCategory.trim()) { set('category', newCategory.trim()); setShowNewCategory(false); setNewCategory(''); } }} className="shrink-0 rounded bg-primary px-2 text-[9px] font-bold text-primary-foreground">Add</button><button type="button" onClick={() => setShowNewCategory(false)} className="shrink-0 text-[9px] text-muted-foreground">Cancel</button></div>
+                : <select value={form.category || ''} onChange={e => set('category', e.target.value)} className="editor-input mt-1"><option value="">Select category...</option>{existingCategories.map(c => <option key={c} value={c}>{c}</option>)}</select>}
+            </div>
+          </div>
+          <label><FieldLabel>Short description *</FieldLabel><input required value={form.shortDescription} onChange={e => set('shortDescription', e.target.value)} className="editor-input mt-1" /></label>
+          <label><FieldLabel>Description *</FieldLabel><textarea required rows={6} value={form.description} onChange={e => set('description', e.target.value)} className="editor-input mt-1 resize-y" /></label>
+          <label><FieldLabel>Video URL (optional)</FieldLabel><input value={form.video || ''} onChange={e => set('video', e.target.value || null)} className="editor-input mt-1" placeholder="https://youtube.com/... or direct video URL" /></label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label><FieldLabel>Display order</FieldLabel><input type="number" value={form.displayOrder ?? 0} onChange={e => set('displayOrder', Number(e.target.value))} className="editor-input mt-1" /></label>
+            <div className="flex items-end gap-4"><label className="flex items-center gap-2 pb-2"><input type="checkbox" checked={form.published ?? false} onChange={e => set('published', e.target.checked)} className="accent-primary" /><span className="text-[11px] font-semibold uppercase tracking-[.1em] text-muted-foreground">Published</span></label><label className="flex items-center gap-2 pb-2"><input type="checkbox" checked={form.featured ?? false} onChange={e => set('featured', e.target.checked)} className="accent-secondary" /><span className="text-[11px] font-semibold uppercase tracking-[.1em] text-muted-foreground">Featured</span></label></div>
+          </div>
+        </div>}
+
+        {activeTab === 'images' && <div className="space-y-5">
+          <ImageUpload value={form.image || ''} onChange={v => set('image', v)} label="Primary image" previewSize="lg" />
+          <MultiImageUpload images={form.images || []} onChange={v => set('images', v)} />
+        </div>}
+
+        {activeTab === 'meta' && <div className="space-y-4">
+          <div><FieldLabel>Custom meta fields</FieldLabel>
+            <div className="mt-2 space-y-2">{Object.entries(form.meta || {}).map(([k, v]) => <div key={k} className="flex items-center gap-2 rounded-sm border border-border bg-muted/30 px-2.5 py-1.5"><span className="flex-1 truncate font-mono text-[10px] text-muted-foreground">{k}</span><span className="flex-1 truncate text-xs">{String(v)}</span><button type="button" onClick={() => removeMeta(k)} className="text-muted-foreground hover:text-destructive"><Trash2 size={10} /></button></div>)}</div>
+            <div className="mt-2 flex gap-2"><input value={metaKey} onChange={e => setMetaKey(e.target.value)} placeholder="Key" className="editor-input flex-1" /><input value={metaValue} onChange={e => setMetaValue(e.target.value)} placeholder="Value" className="editor-input flex-1" /><button type="button" onClick={addMeta} className="shrink-0 rounded bg-primary px-2.5 py-1 text-[9px] font-bold text-primary-foreground">Add</button></div>
+          </div>
+        </div>}
+
+        <div className="mt-6 flex gap-2 border-t border-border pt-4">
+          <button type="submit" disabled={pending} className="flex flex-1 items-center justify-center gap-2 bg-primary px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground hover:bg-secondary hover:text-primary sm:py-3"><Save size={14} /> {pending ? 'Saving...' : record ? 'Save changes' : 'Create entry'}</button>
+          <button type="button" onClick={onClose} className="border border-border px-3 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground hover:text-primary sm:py-3">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>;
 }
+
 function FieldLabel({ children }: { children: ReactNode }) { return <span className="font-mono-ui text-[9px] uppercase tracking-[.13em] text-muted-foreground">{children}</span>; }
 
 function Router() {

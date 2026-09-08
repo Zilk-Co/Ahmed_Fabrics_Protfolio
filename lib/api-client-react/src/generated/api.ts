@@ -932,3 +932,60 @@ export const useSeedSampleData = <TError = ErrorType<void>,
       return useMutation(getSeedSampleDataMutationOptions(options));
     }
 
+// ---- Categories ----
+export const getCategories = (params?: { collection?: string }) => {
+  const queryParams = new URLSearchParams();
+  if (params?.collection) queryParams.set('collection', params.collection);
+  const query = queryParams.toString();
+  return customFetch<Record<string, string[]>>(`/api/admin/categories${query ? `?${query}` : ''}`, { credentials: 'include' });
+};
+
+export const getGetCategoriesQueryKey = (params?: { collection?: string }) => ['/api/admin/categories', params] as const;
+
+export const getGetCategoriesQueryOptions = <TError = ErrorType<unknown>, TData = Record<string, string[]>>(params?: { collection?: string }, options?: { query?: UseQueryOptions<Record<string, string[]>, TError, TData> }) => {
+  const queryKey = getGetCategoriesQueryKey(params);
+  return { queryKey, queryFn: () => getCategories(params), ...options?.query } as UseQueryOptions<Record<string, string[]>, TError, TData> & { queryKey: readonly unknown[] };
+};
+
+export const useGetCategories = <TError = ErrorType<unknown>, TData = Record<string, string[]>>(params?: { collection?: string }, options?: { query?: UseQueryOptions<Record<string, string[]>, TError, TData> }) => {
+  return useQuery<Record<string, string[]>, TError, TData>(getGetCategoriesQueryOptions(params, options));
+};
+
+// ---- Bulk Operations ----
+type BulkAction = 'publish' | 'unpublish' | 'feature' | 'unfeature' | 'delete';
+
+export const bulkContentAction = (data: { ids: number[]; action: BulkAction }) =>
+  customFetch<{ processed: number }>('/api/admin/content/bulk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+
+export const useBulkContentAction = <TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof bulkContentAction>>, ErrorType<void>, { ids: number[]; action: BulkAction }, TContext>, request?: SecondParameter<typeof customFetch> }) => {
+  const mutationKey = ['bulkContentAction'];
+  const { mutation: mutationOptions, request: requestOptions } = options ?
+    options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkContentAction>>, { ids: number[]; action: BulkAction }> = (data) => bulkContentAction(data);
+  return useMutation({ ...mutationOptions, mutationFn });
+};
+
+// ---- Duplicate Content ----
+export const duplicateContent = (id: number) =>
+  customFetch<ContentRecord>(`/api/admin/content/${id}/duplicate`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+export const useDuplicateContent = <TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof duplicateContent>>, ErrorType<void>, number, TContext>, request?: SecondParameter<typeof customFetch> }) => {
+  const mutationKey = ['duplicateContent'];
+  const { mutation: mutationOptions, request: requestOptions } = options ?
+    options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof duplicateContent>>, number> = (id) => duplicateContent(id);
+  return useMutation({ ...mutationOptions, mutationFn });
+};
+
