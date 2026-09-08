@@ -84,13 +84,13 @@ const EDITOR_COLORS = [
 ];
 
 const EDITOR_FONT_SIZES = [
-  { label: 'XS', value: 'text-[10px]' },
-  { label: 'SM', value: 'text-xs' },
-  { label: 'Base', value: 'text-sm' },
-  { label: 'MD', value: 'text-base' },
-  { label: 'LG', value: 'text-lg' },
-  { label: 'XL', value: 'text-xl' },
-  { label: '2XL', value: 'text-2xl' },
+  { label: 'XS', value: '10px' },
+  { label: 'SM', value: '12px' },
+  { label: 'Base', value: '14px' },
+  { label: 'MD', value: '16px' },
+  { label: 'LG', value: '18px' },
+  { label: 'XL', value: '20px' },
+  { label: '2XL', value: '24px' },
 ];
 
 function EditableText({ page, k, children, className = '', as: Tag = 'span' }: {
@@ -101,6 +101,7 @@ function EditableText({ page, k, children, className = '', as: Tag = 'span' }: {
   const saveText = useSavePageText();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+  const [showSaved, setShowSaved] = useState(false);
   const [showColors, setShowColors] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -116,7 +117,8 @@ function EditableText({ page, k, children, className = '', as: Tag = 'span' }: {
     if (draft !== text) {
       saveText.mutate({ page, key: k, value: draft, color: saved?.color || undefined });
     }
-    setEditing(false);
+    setShowSaved(true);
+    setTimeout(() => { setShowSaved(false); setEditing(false); }, 1200);
   };
   const setColor = (c: string) => {
     saveText.mutate({ page, key: k, value: text, color: c || undefined });
@@ -137,7 +139,7 @@ function EditableText({ page, k, children, className = '', as: Tag = 'span' }: {
     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(); } if (e.key === 'Escape') cancelEdit(); }}
   >{editing ? draft : text}</Tag>
   {editing && <span className="absolute -top-8 left-0 z-50 flex gap-1 rounded border border-border bg-white p-1 shadow-lg">
-    <button type="button" onMouseDown={(e) => { e.preventDefault(); saveEdit(); }} className="rounded bg-primary px-2 py-0.5 text-[9px] font-bold text-primary-foreground">Save</button>
+    <button type="button" onMouseDown={(e) => { e.preventDefault(); saveEdit(); }} className={`rounded px-2 py-0.5 text-[9px] font-bold ${showSaved ? 'bg-green-600 text-white' : 'bg-primary text-primary-foreground'}`}>{showSaved ? 'Saved!' : 'Save'}</button>
     <button type="button" onMouseDown={(e) => { e.preventDefault(); cancelEdit(); }} className="rounded bg-muted px-2 py-0.5 text-[9px] font-bold text-muted-foreground">Cancel</button>
     <button type="button" onMouseDown={(e) => { e.preventDefault(); removeText(); }} className="rounded bg-red-500 px-2 py-0.5 text-[9px] font-bold text-white">Remove</button>
     <span className="relative">
@@ -156,8 +158,10 @@ function EditorOverlay() {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
+  const [originalText, setOriginalText] = useState('');
   const [showColors, setShowColors] = useState(false);
   const [showSizes, setShowSizes] = useState(false);
+  const [saved, setSaved] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   const getCurrentColor = (el: HTMLElement): string => {
@@ -168,24 +172,23 @@ function EditorOverlay() {
   };
 
   const getCurrentSize = (el: HTMLElement): string => {
-    for (const s of EDITOR_FONT_SIZES) {
-      if (el.classList.contains(s.value)) return s.value;
-    }
-    return '';
+    return el.style.fontSize || '';
   };
 
   useEffect(() => {
     if (!editorMode) return;
     const handler = (e: MouseEvent) => {
       const el = e.target as HTMLElement;
-      if (el.closest('.editor-toolbar') || el.closest('[contenteditable]')) return;
-      const textEl = el.closest('h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, button, label, div') as HTMLElement;
+      if (el.closest('.editor-toolbar') || el.closest('[contenteditable]') || el.closest('[data-editor-exit]') || el.closest('button[data-no-editor]')) return;
+      const textEl = el.closest('h1, h2, h3, h4, h5, h6, p, span, a, li, td, th, label, div') as HTMLElement;
       if (textEl && textEl.textContent?.trim() && !textEl.querySelector('h1, h2, h3, h4, h5, h6, p, span, a, li')) {
         e.preventDefault();
         e.stopPropagation();
         setTarget(textEl);
         setDraft(textEl.textContent || '');
+        setOriginalText(textEl.textContent || '');
         setEditing(true);
+        setSaved(false);
         setShowColors(false);
         setShowSizes(false);
       }
@@ -206,6 +209,12 @@ function EditorOverlay() {
       saveText.mutate({ page, key, value: draft });
       target.textContent = draft;
     }
+    setSaved(true);
+    setTimeout(() => { setSaved(false); setEditing(false); setTarget(null); }, 1200);
+  };
+
+  const cancelEdit = () => {
+    if (target && originalText) target.textContent = originalText;
     setEditing(false);
     setTarget(null);
   };
@@ -221,8 +230,7 @@ function EditorOverlay() {
 
   const setFontSize = (s: string) => {
     if (target) {
-      EDITOR_FONT_SIZES.forEach(fs => target.classList.remove(fs.value));
-      if (s) target.classList.add(s);
+      target.style.fontSize = s || '';
       saveText.mutate({ page, key: `${key}_size`, value: s || 'default' });
     }
     setShowSizes(false);
@@ -232,9 +240,9 @@ function EditorOverlay() {
   const toolbarLeft = Math.min(target.getBoundingClientRect().left, window.innerWidth - 400);
 
   return <div ref={overlayRef} className="editor-toolbar fixed z-[70] flex flex-wrap items-center gap-1 rounded border border-border bg-white p-1.5 shadow-lg" style={{ top: toolbarTop, left: toolbarLeft }}>
-    <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') { setEditing(false); setTarget(null); } }} className="w-44 border-b border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-primary" autoFocus />
-    <button type="button" onMouseDown={e => { e.preventDefault(); save(); }} className="rounded bg-primary px-2 py-1 text-[9px] font-bold text-primary-foreground">Save</button>
-    <button type="button" onMouseDown={e => { e.preventDefault(); setEditing(false); setTarget(null); }} className="rounded bg-muted px-2 py-1 text-[9px] font-bold text-muted-foreground">Cancel</button>
+    <input value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') cancelEdit(); }} className="w-44 border-b border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-primary" autoFocus />
+    <button type="button" onMouseDown={e => { e.preventDefault(); save(); }} className={`rounded px-2 py-1 text-[9px] font-bold ${saved ? 'bg-green-600 text-white' : 'bg-primary text-primary-foreground'}`}>{saved ? 'Saved!' : 'Save'}</button>
+    <button type="button" onMouseDown={e => { e.preventDefault(); cancelEdit(); }} className="rounded bg-muted px-2 py-1 text-[9px] font-bold text-muted-foreground">Cancel</button>
     <span className="relative">
       <button type="button" onMouseDown={e => { e.preventDefault(); setShowColors(!showColors); setShowSizes(false); }} className={`rounded px-2 py-1 text-[9px] font-bold ${showColors ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>Color</button>
       {showColors && <span className="absolute top-7 left-0 z-50 flex flex-wrap gap-1 rounded border border-border bg-white p-1 shadow-lg w-36">
@@ -458,7 +466,7 @@ function PublicShell({ children }: { children: ReactNode }) {
 
   return <EditorModeContext.Provider value={editorActive}><PageTextContext.Provider value={pageTextQuery.data || null}><div data-editor-active={editorActive ? 'true' : undefined} className="min-h-[100dvh] bg-background text-foreground">
      <PageMeta /><ScrollToTop />
-    {editorActive && <div className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between bg-secondary px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary sm:text-[11px]"><span>Editor mode active. Click any text to edit it directly.</span><span className="flex items-center gap-3"><span className="font-mono-ui">Time left: {editorCountdown}</span><button type="button" onClick={() => { sessionStorage.removeItem('editor_start'); fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => { queryClient.invalidateQueries({ queryKey: getGetAdminSessionQueryKey() }); setLocation('/admin'); }); }} className="rounded bg-primary px-3 py-1 text-primary-foreground">Exit editor</button></span></div>}
+    {editorActive && <div data-editor-exit className="fixed top-0 left-0 right-0 z-[60] flex items-center justify-between bg-secondary px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary sm:text-[11px]"><span>Editor mode active. Click any text to edit it directly.</span><span className="flex items-center gap-3"><span className="font-mono-ui">Time left: {editorCountdown}</span><button type="button" data-editor-exit onClick={() => { sessionStorage.removeItem('editor_start'); fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => { queryClient.invalidateQueries({ queryKey: getGetAdminSessionQueryKey() }); setLocation('/admin'); }); }} className="rounded bg-primary px-3 py-1 text-primary-foreground">Exit editor</button></span></div>}
     <EditorOverlay />
     <header className={`sticky z-40 border-b border-border/70 bg-background/95 backdrop-blur-md ${editorActive ? 'top-10' : 'top-0'}`}>
       <div className="mx-auto flex min-h-[64px] max-w-[1440px] items-center justify-between gap-4 px-4 py-2.5 sm:min-h-[76px] sm:gap-6 sm:px-5 sm:py-3 lg:px-10">
@@ -679,7 +687,7 @@ function ProductCard({ record }: { record: ContentRecord }) {
   const [active, setActive] = useState<number | null>(null);
   return <article className="group overflow-hidden rounded-sm border border-black/[.06] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04),0_6px_24px_rgba(0,0,0,0.06)] transition-shadow duration-300 hover:shadow-[0_1px_3px_rgba(0,0,0,0.04),0_12px_40px_rgba(0,0,0,0.1)]">
     <button type="button" data-testid={`button-view-product-${record.id}`} onClick={() => setActive(0)} className="relative block h-56 w-full overflow-hidden bg-muted text-left cursor-zoom-in sm:h-72"><img src={images[0]} alt={record.title} className="h-full w-full object-cover mix-blend-multiply transition-transform duration-700 group-hover:scale-[1.04]" onError={(event) => { event.currentTarget.src = '/fabric-detail.jpg'; }} /><span className="absolute bottom-2.5 left-2.5 bg-background/85 px-2 py-1 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary/70 sm:bottom-3 sm:left-3 sm:text-[9px] sm:tracking-[.12em]">View images</span></button>
-    <div className="p-4 sm:p-5"><p className="font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px] sm:tracking-[.14em]">{record.category || 'Textile product'}</p><h2 className="mt-1.5 font-display text-2xl text-primary sm:mt-2 sm:text-3xl">{record.title}</h2><p className="mt-2 text-[13px] leading-6 text-muted-foreground sm:mt-3 sm:text-sm">{record.shortDescription}</p><Link href={`/products/${record.slug}`} data-testid={`link-product-detail-${record.id}`} className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.12em] text-primary sm:mt-6">View product <ArrowUpRight size={13} /></Link></div>
+    <div className="p-4 sm:p-5"><p className="font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px] sm:tracking-[.14em]">{record.category || 'Textile product'}</p><h2 className="mt-1.5 font-display text-2xl text-primary sm:mt-2 sm:text-3xl">{record.title}</h2><p className="mt-2 text-[13px] leading-6 text-muted-foreground sm:mt-3 sm:text-sm">{record.shortDescription}</p><Link href={`/products/${record.slug}`} data-testid={`link-product-detail-${record.id}`} className="group/btn mt-4 inline-flex items-center gap-1.5 rounded-sm border border-primary/20 bg-primary/5 px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary transition-all hover:border-primary hover:bg-primary hover:text-primary-foreground sm:mt-6 sm:px-4 sm:py-2.5">View product <ArrowUpRight size={13} className="transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" /></Link></div>
     {active !== null && <Lightbox images={images} activeIndex={active} alt={record.title} onClose={() => setActive(null)} onChange={setActive} />}
   </article>;
 }
