@@ -337,11 +337,10 @@ async function ensureSeeded() {
       founderImage: "/founder.jpg",
     });
     await db.insert(factoryStatsTable).values([
-      { value: "100+", label: "Machines", displayOrder: 1 },
-      { value: "50+", label: "Workers", displayOrder: 2 },
+      { value: "99+", label: "Machines", displayOrder: 1 },
+      { value: "55+", label: "Workers", displayOrder: 2 },
       { value: "46+", label: "Years", displayOrder: 3 },
-      { value: "Custom", label: "Production", displayOrder: 4 },
-      { value: "Baldia", label: "Karachi", displayOrder: 5 },
+      { value: "B2B", label: "Custom Production", displayOrder: 4 },
     ]);
   } else {
     await db.update(siteSettingsTable).set({
@@ -356,9 +355,8 @@ async function ensureSeeded() {
       founderQuote: "We started with one machine and a clear idea: make textiles that actually work for the people who use them.",
       founderImage: "/founder.jpg",
     }).where(eq(siteSettingsTable.id, settings[0].id));
-    await db.update(factoryStatsTable).set({ value: "100+" }).where(eq(factoryStatsTable.label, "Machines"));
-    await db.update(factoryStatsTable).set({ value: "50+" }).where(eq(factoryStatsTable.label, "Workers"));
-    await db.update(factoryStatsTable).set({ value: "Custom" }).where(eq(factoryStatsTable.value, "Bulk"));
+    await db.update(factoryStatsTable).set({ value: "99+" }).where(eq(factoryStatsTable.label, "Machines"));
+    await db.update(factoryStatsTable).set({ value: "55+" }).where(eq(factoryStatsTable.label, "Workers"));
     const existingYears = await db.select({ id: factoryStatsTable.id }).from(factoryStatsTable).where(eq(factoryStatsTable.label, "Years")).limit(1);
     if (existingYears.length === 0) {
       await db.insert(factoryStatsTable).values({ value: "46+", label: "Years", displayOrder: 3 });
@@ -580,6 +578,23 @@ router.patch("/admin/content", requireAdmin, async (req, res) => {
     founderQuote: settings.founderQuote,
     founderImage: settings.founderImage,
   });
+});
+
+// Stats update endpoint
+router.patch("/admin/stats", requireAdmin, async (req, res) => {
+  const { stats } = req.body as { stats: Array<{ value: string; label: string; displayOrder: number }> };
+  if (!Array.isArray(stats)) { res.status(400).json({ error: "stats array required" }); return; }
+  // Delete all existing stats and re-insert
+  await db.delete(factoryStatsTable);
+  if (stats.length > 0) {
+    await db.insert(factoryStatsTable).values(stats.map((s, i) => ({
+      value: s.value,
+      label: s.label,
+      displayOrder: s.displayOrder || i + 1,
+    })));
+  }
+  const updated = await db.select().from(factoryStatsTable).orderBy(asc(factoryStatsTable.displayOrder));
+  res.json(updated.map(s => ({ value: s.value, label: s.label, displayOrder: s.displayOrder })));
 });
 
 router.patch("/admin/content/:id", requireAdmin, async (req, res) => {

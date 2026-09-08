@@ -932,6 +932,25 @@ export const useSeedSampleData = <TError = ErrorType<void>,
       return useMutation(getSeedSampleDataMutationOptions(options));
     }
 
+// ---- Update Stats ----
+export const updateAdminStats = (stats: Array<{ value: string; label: string; displayOrder: number }>) =>
+  customFetch<Array<{ value: string; label: string; displayOrder: number }>>('/api/admin/stats', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ stats }),
+  });
+
+export const useUpdateAdminStats = <TContext = unknown>(options?: { mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateAdminStats>>, ErrorType<void>, Array<{ value: string; label: string; displayOrder: number }>, TContext>, request?: SecondParameter<typeof customFetch> }) => {
+  const mutationKey = ['updateAdminStats'];
+  const { mutation: mutationOptions, request: requestOptions } = options ?
+    options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminStats>>, Array<{ value: string; label: string; displayOrder: number }>> = (stats) => updateAdminStats(stats);
+  return useMutation({ ...mutationOptions, mutationFn });
+};
+
 // ---- Categories ----
 export const getCategories = (params?: { collection?: string }) => {
   const queryParams = new URLSearchParams();
