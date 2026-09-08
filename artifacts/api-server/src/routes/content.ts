@@ -477,7 +477,6 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     httpOnly: true,
     sameSite: "lax",
     secure: true,
-    maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
     path: "/",
   });
   res.json({ authenticated: true });

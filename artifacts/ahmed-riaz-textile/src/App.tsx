@@ -1157,6 +1157,27 @@ function FieldLabel({ children }: { children: ReactNode }) { return <span classN
 
 function Router() {
   const [location] = useLocation();
+  const { data: session } = useGetAdminSession();
+  const prevLocation = useRef(location);
+  const isAdminArea = (p: string) => p.startsWith('/admin');
+  useEffect(() => {
+    const from = prevLocation.current;
+    const to = location;
+    prevLocation.current = location;
+    const wasInAdminArea = isAdminArea(from) && !isAdminArea(to);
+    const wasAdminLogin = from === '/admin-login' && !isAdminArea(to);
+    if ((wasInAdminArea || wasAdminLogin) && session?.authenticated) {
+      fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+        .then(() => queryClient.invalidateQueries({ queryKey: getGetAdminSessionQueryKey() }))
+        .catch(() => {});
+    }
+  }, [location, session?.authenticated]);
+  useEffect(() => {
+    if (!isAdminArea(location)) return;
+    const handler = () => { if (navigator.sendBeacon) navigator.sendBeacon('/api/auth/logout', new Blob([])); else fetch('/api/auth/logout', { method: 'POST', credentials: 'include', keepalive: true }); };
+    window.addEventListener('pagehide', handler);
+    return () => window.removeEventListener('pagehide', handler);
+  }, [location]);
   return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={HomePage} /><Route path="/about" component={AboutPage} /><Route path="/services" component={ServicesPage} /><Route path="/services/:slug"><DetailPage kind="services" /></Route><Route path="/products" component={ProductsPage} /><Route path="/products/:slug"><DetailPage kind="products" /></Route><Route path="/designs" component={DesignsPage} /><Route path="/designs/:slug"><DetailPage kind="designs" /></Route><Route path="/excellence" component={ExcellencePage} /><Route path="/machinery/:slug"><DetailPage kind="machinery" /></Route><Route path="/contact" component={ContactPage} /><Route path="/privacy" component={PrivacyPage} /><Route path="/terms" component={TermsPage} /><Route path="/admin-login" component={AdminLoginPage} /><Route path="/admin" component={AdminShell} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 function App() { useScrollReveal(); return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>; }
