@@ -466,6 +466,19 @@ async function ensureSeeded() {
       meta: item.meta,
     })));
   }
+  // Force-update machinery with correct 4 primary + 4 gallery entries
+  const existingMachinery = await db.select({ id: contentTable.id }).from(contentTable).where(eq(contentTable.collection, "machinery"));
+  const correctMachines = seedContent.filter(item => item.collection === "machinery");
+  if (existingMachinery.length !== correctMachines.length || existingMachinery.length === 0) {
+    await db.delete(contentTable).where(eq(contentTable.collection, "machinery"));
+    await db.insert(contentTable).values(correctMachines.map(item => ({
+      collection: item.collection, slug: item.slug, title: item.title,
+      shortDescription: item.shortDescription, description: item.description,
+      category: item.category, image: item.image, images: item.images,
+      video: null, published: item.published, featured: item.featured,
+      displayOrder: item.displayOrder, meta: item.meta,
+    })));
+  }
 }
 
 async function requireAdmin(req: Request, res: Response, next: NextFunction) {
