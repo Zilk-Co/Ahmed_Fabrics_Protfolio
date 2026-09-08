@@ -345,8 +345,16 @@ async function ensureSeeded() {
     ]);
   } else {
     await db.update(siteSettingsTable).set({
-      brandName: "Ahmed Riaz Co",
-      whatsappMessage: "Hello Ahmed Riaz, I would like to discuss a textile requirement.",
+      brandName: "Riaz Fabrics",
+      location: "Baldia, Karachi, Pakistan",
+      officeAddress: "Naval Colony, Baldia, Karachi, Pakistan",
+      factoryAddress: "24, Baldia, Karachi, Pakistan",
+      businessHours: "Monday to Thursday: 9:00 AM - 5:00 PM. Friday: Closed. Saturday & Sunday: 9:00 AM - 5:00 PM.",
+      whatsappMessage: "Hello Riaz Fabrics, I would like to discuss a textile requirement.",
+      founderName: "Riaz Ahmed",
+      founderTitle: "Founder & Managing Director",
+      founderQuote: "We started with one machine and a clear idea: make textiles that actually work for the people who use them.",
+      founderImage: "/founder.jpg",
     }).where(eq(siteSettingsTable.id, settings[0].id));
     await db.update(factoryStatsTable).set({ value: "100+" }).where(eq(factoryStatsTable.label, "Machines"));
     await db.update(factoryStatsTable).set({ value: "50+" }).where(eq(factoryStatsTable.label, "Workers"));
