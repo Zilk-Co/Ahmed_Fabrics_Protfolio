@@ -295,7 +295,7 @@ const seedContent = [
     collection: "faqs",
     slug: "factory-location",
     title: "Where is the factory located?",
-    shortDescription: "The factory is based in Baldia, Karachi, Pakistan.",
+    shortDescription: "The factory is based in Baldia Industrial Area, Karachi, Pakistan.",
     description: "The exact factory address and map link can be added or updated from the admin panel.",
     category: "Factory",
     image: "",
@@ -405,12 +405,12 @@ async function ensureSeeded() {
   if (settings.length === 0) {
     await db.insert(siteSettingsTable).values({
       brandName: "Riaz Fabrics",
-      location: "Baldia, Karachi, Pakistan",
+      location: "Baldia Industrial Area, Karachi, Pakistan",
       phone: "",
       whatsapp: "",
       email: "",
-      officeAddress: "Baldia, Karachi, Pakistan",
-      factoryAddress: "Baldia, Karachi, Pakistan",
+      officeAddress: "Baldia Industrial Area, Karachi, Pakistan",
+      factoryAddress: "Baldia Industrial Area, Karachi, Pakistan",
       businessHours: "Add business hours in Admin",
       whatsappMessage: "Hello Riaz Fabrics, I would like to discuss a textile requirement.",
       heroImage,
@@ -429,9 +429,9 @@ async function ensureSeeded() {
   } else {
     await db.update(siteSettingsTable).set({
       brandName: "Riaz Fabrics",
-      location: "Baldia, Karachi, Pakistan",
-      officeAddress: "Naval Colony, Baldia, Karachi, Pakistan",
-      factoryAddress: "24, Baldia, Karachi, Pakistan",
+      location: "Baldia Industrial Area, Karachi, Pakistan",
+      officeAddress: "Naval Colony, Baldia Industrial Area, Karachi, Pakistan",
+      factoryAddress: "Plot 24, Baldia Industrial Area, Karachi, Pakistan",
       businessHours: "Monday to Thursday: 9:00 AM - 5:00 PM. Friday: Closed. Saturday & Sunday: 9:00 AM - 5:00 PM.",
       whatsappMessage: "Hello Riaz Fabrics, I would like to discuss a textile requirement.",
       founderName: "Riaz Ahmed",

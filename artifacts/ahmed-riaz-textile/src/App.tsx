@@ -7,7 +7,7 @@ import {
   SlidersHorizontal, Star, Trash2, Upload, X, Zap, Search, Filter,
   Copy, ExternalLink, Globe, Clock, Tag, Layers, GripVertical, CheckSquare, Square,
   ImagePlus, Link as LinkIcon, Type, AlignLeft, Hash, BarChart3, TrendingUp,
-  CircleDot, ChevronDown,
+  CircleDot, ChevronDown, Languages, Send, Sparkles,
 } from 'lucide-react';
 import {
   ContentCollection, type ContentInput, type ContentRecord, type ContentUpdate,
@@ -269,9 +269,9 @@ const navItems = [
   { href: '/excellence', label: 'Our Excellence' }, { href: '/contact', label: 'Contact Us' },
 ];
 const fallbackSettings = {
-  brandName: 'Riaz Fabrics', location: 'Baldia, Karachi',
+  brandName: 'Riaz Fabrics', location: 'Baldia Industrial Area, Karachi',
   phone: '+92 21 3258 2140', whatsapp: '+92 300 825 4210', email: 'production@ahmedriaztextile.com',
-  officeAddress: 'Plot 18, Sector 7-A, Baldia Town, Karachi', factoryAddress: 'Baldia Industrial Area, Karachi, Pakistan',
+  officeAddress: 'Plot 18, Sector 7-A, Baldia Industrial Area, Karachi', factoryAddress: 'Baldia Industrial Area, Karachi, Pakistan',
   businessHours: 'Monday to Saturday, 9:00 am to 6:00 pm', whatsappMessage: 'Hello Riaz Fabrics, I would like to discuss a production requirement.',
   heroImage: '/factory-hero.jpg', heroVideo: null,
   aboutHeroImage: '/factory-hero.jpg', servicesHeroImage: '/factory-hero.jpg',
@@ -338,13 +338,13 @@ function toWhatsapp(number: string, message: string) {
 }
 
 const PAGE_SEO: Record<string, { title: string; description: string }> = {
-  '/': { title: 'Riaz Fabrics | Textile Manufacturing, Baldia Karachi', description: 'Riaz Fabrics is a textile manufacturing factory in Baldia, Karachi, producing fabric, textiles and custom designs for brands and wholesale buyers.' },
-  '/about': { title: 'About Us | Riaz Fabrics', description: 'Learn about Riaz Fabrics, a textile factory in Baldia, Karachi with over 40 years of manufacturing experience.' },
-  '/services': { title: 'Services | Riaz Fabrics', description: 'Custom textile manufacturing, fabric dyeing, wholesale production and design services from Riaz Fabrics in Baldia, Karachi.' },
+  '/': { title: 'Riaz Fabrics | Textile Manufacturing, Karachi', description: 'Riaz Fabrics is a textile manufacturing factory in Baldia Industrial Area, Karachi, producing fabric, textiles and custom designs for brands and wholesale buyers.' },
+  '/about': { title: 'About Us | Riaz Fabrics', description: 'Learn about Riaz Fabrics, a textile factory in Baldia Industrial Area, Karachi with over 40 years of manufacturing experience.' },
+  '/services': { title: 'Services | Riaz Fabrics', description: 'Custom textile manufacturing, fabric dyeing, wholesale production and design services from Riaz Fabrics in Baldia Industrial Area, Karachi.' },
   '/products': { title: 'Products | Riaz Fabrics', description: 'Browse our textile products including cotton cloth, dupatta textiles, frock material and custom fabric for brands and wholesale buyers.' },
   '/designs': { title: 'Design Library | Riaz Fabrics', description: 'Explore our textile design library with woven patterns, surface finishes and repeat designs for production.' },
-  '/excellence': { title: 'Our Excellence | Riaz Fabrics', description: 'Four decades of textile manufacturing excellence, machinery and production capability in Baldia, Karachi.' },
-  '/contact': { title: 'Contact Us | Riaz Fabrics', description: 'Get in touch with Riaz Fabrics for textile manufacturing enquiries, custom orders and factory visits in Baldia, Karachi.' },
+  '/excellence': { title: 'Our Excellence | Riaz Fabrics', description: 'Four decades of textile manufacturing excellence, machinery and production capability in Baldia Industrial Area, Karachi.' },
+  '/contact': { title: 'Contact Us | Riaz Fabrics', description: 'Get in touch with Riaz Fabrics for textile manufacturing enquiries, custom orders and factory visits in Baldia Industrial Area, Karachi.' },
   '/privacy': { title: 'Privacy Policy | Riaz Fabrics', description: 'How Riaz Fabrics handles your information when you visit our website or contact us.' },
   '/terms': { title: 'Terms & Conditions | Riaz Fabrics', description: 'Terms and conditions for using the Riaz Fabrics website and working with us.' },
 };
@@ -352,7 +352,7 @@ function PageMeta() {
   const [location] = useLocation();
   useEffect(() => {
     const path = location.replace(/\?.*/, '').replace(/\/$/, '') || '/';
-    const seo = PAGE_SEO[path] || { title: 'Riaz Fabrics', description: 'Textile manufacturing factory in Baldia, Karachi.' };
+    const seo = PAGE_SEO[path] || { title: 'Riaz Fabrics', description: 'Textile manufacturing factory in Baldia Industrial Area, Karachi.' };
     document.title = seo.title;
     const updateMeta = (selector: string, content: string, attribute: string) => {
       const element = document.head.querySelector<HTMLMetaElement>(selector);
@@ -508,13 +508,14 @@ function PublicShell({ children }: { children: ReactNode }) {
     <main>{children}</main>
     <footer className="bg-primary text-primary-foreground">
       <div className="mx-auto grid max-w-[1380px] gap-8 px-4 py-12 sm:gap-12 sm:px-5 sm:py-16 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-10">
-        <div><Mark light /><p className="mt-6 max-w-sm text-sm leading-7 text-primary-foreground/65 sm:mt-8">A working textile factory in Baldia, Karachi. We make fabric and develop designs for buyers who want a clear production partner.</p></div>
+        <div><Mark light /><p className="mt-6 max-w-sm text-sm leading-7 text-primary-foreground/65 sm:mt-8">A working textile factory in Baldia Industrial Area, Karachi. We make fabric and develop designs for buyers who want a clear production partner.</p></div>
         <div><p className="font-mono-ui text-[9px] uppercase tracking-[.14em] text-secondary sm:text-[10px] sm:tracking-[.16em]">Navigation</p><div className="mt-4 grid gap-2.5 text-sm text-primary-foreground/70 sm:mt-5 sm:gap-3">{navItems.map(item => <Link key={item.href} href={item.href} data-testid={`link-footer-${item.label.toLowerCase().replace(/\s/g, '-')}`} className="transition-colors hover:text-secondary">{item.label}</Link>)}</div></div>
         <div><p className="font-mono-ui text-[9px] uppercase tracking-[.14em] text-secondary sm:text-[10px] sm:tracking-[.16em]">Contact</p><div className="mt-4 grid gap-2.5 text-sm text-primary-foreground/70 sm:mt-5 sm:gap-3"><a href={`tel:${settings.phone || '+922132582140'}`} data-testid="link-footer-phone" className="flex items-center gap-2 hover:text-secondary"><Phone size={14} /> {settings.phone || '+92 21 3258 2140'}</a><a href={toWhatsapp(settings.whatsapp || '+923185905574', settings.whatsappMessage)} target="_blank" rel="noreferrer" data-testid="link-footer-whatsapp" className="flex items-center gap-2 hover:text-secondary"><MessageCircle size={14} /> {settings.whatsapp || '+92 318 5905574'}</a><a href={`mailto:${settings.email}`} data-testid="link-footer-email" className="flex items-center gap-2 hover:text-secondary"><Mail size={14} /> {settings.email}</a><span className="flex items-start gap-2"><MapPin size={14} className="mt-1 shrink-0" /> {settings.factoryAddress}</span></div></div>
       </div>
-      <div className="mx-auto flex max-w-[1380px] flex-col gap-2 border-t border-primary-foreground/15 px-4 py-4 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary-foreground/45 sm:px-5 sm:py-5 sm:text-[9px] sm:tracking-[.12em] lg:px-10"><div className="flex flex-wrap items-center gap-3"><span>&copy; {new Date().getFullYear()} Riaz Fabrics</span><span className="hidden sm:inline">&middot;</span><Link href="/privacy" className="hover:text-primary-foreground/70">Privacy Policy</Link><span className="hidden sm:inline">&middot;</span><Link href="/terms" className="hover:text-primary-foreground/70">Terms &amp; Conditions</Link></div><span>Baldia, Karachi, Pakistan</span></div>
+      <div className="mx-auto flex max-w-[1380px] flex-col gap-2 border-t border-primary-foreground/15 px-4 py-4 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary-foreground/45 sm:px-5 sm:py-5 sm:text-[9px] sm:tracking-[.12em] lg:px-10"><div className="flex flex-wrap items-center gap-3"><span>&copy; {new Date().getFullYear()} Riaz Fabrics</span><span className="hidden sm:inline">&middot;</span><Link href="/privacy" className="hover:text-primary-foreground/70">Privacy Policy</Link><span className="hidden sm:inline">&middot;</span><Link href="/terms" className="hover:text-primary-foreground/70">Terms &amp; Conditions</Link></div><span>Baldia Industrial Area, Karachi, Pakistan</span></div>
     </footer>
     <CookieConsent />
+    <AiAssistant />
   </div></PageTextContext.Provider></EditorModeContext.Provider>;
 }
 
@@ -567,11 +568,11 @@ function HomePage() {
   const { data: site, isLoading, isError } = useGetSite();
   const settings = siteSettings(site); const products = collectionRecords(site, 'products', fallbackProducts); const designs = collectionRecords(site, 'designs', fallbackDesigns); const machinery = collectionRecords(site, 'machinery', fallbackMachines); const stats = site?.stats?.length ? site.stats : fallbackStats; const [heroImage, setHeroImage] = useState<number | null>(null);
   if (isLoading) return <LoadingPage />;
-  return <PublicShell><section className="relative overflow-hidden bg-primary text-primary-foreground"><div className="absolute inset-0 opacity-35"><img src={settings.heroImage || '/hero-textile.jpg'} alt="Textile production floor" loading="lazy" decoding="async" className="h-full w-full object-cover mix-blend-luminosity" /></div><div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/25" /><button type="button" data-testid="button-view-hero-gallery" onClick={() => setHeroImage(0)} className="absolute right-4 top-4 z-10 border border-primary-foreground/30 bg-primary/35 px-2.5 py-1.5 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary-foreground transition-colors hover:border-secondary hover:text-secondary sm:right-5 sm:top-5 sm:px-3 sm:py-2 sm:text-[9px] sm:tracking-[.12em] lg:right-10 lg:top-10">View factory floor</button><div className="relative mx-auto flex min-h-[520px] max-w-[1380px] flex-col justify-end px-4 py-12 sm:min-h-[640px] sm:px-5 sm:py-16 lg:min-h-[calc(100vh-76px)] lg:px-10 lg:py-20"><Eyebrow>Riaz Fabrics · Baldia, Karachi</Eyebrow><h1 className="fade-up mt-4 max-w-5xl font-display text-[2.2rem] leading-[.9] tracking-[-.04em] text-[#fbf8f0] sm:mt-5 sm:text-5xl sm:leading-[.92] sm:tracking-[-.045em] lg:text-7xl">Textile manufacturing<br /><em className="text-secondary">for custom requirements.</em></h1><div className="fade-up fade-up-1 mt-7 flex flex-col gap-6 sm:mt-9 sm:flex-row sm:items-center sm:justify-between"><p className="max-w-lg text-[15px] leading-6 text-primary-foreground/75 sm:text-base sm:leading-7">We make textile materials and products for brands, local businesses and wholesale customers from our factory in Baldia, Karachi.</p><div className="flex flex-wrap gap-2.5 sm:gap-3"><Link href="/products" data-testid="link-hero-products" className="rounded-sm bg-secondary px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary transition-colors hover:bg-[#fbf8f0] sm:px-5 sm:py-3 sm:tracking-[.12em]">Explore Our Products</Link><Link href="/contact" data-testid="link-hero-contact" className="rounded-sm border border-primary-foreground/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary-foreground transition-colors hover:border-secondary hover:text-secondary sm:px-5 sm:py-3 sm:tracking-[.12em]">Contact Us</Link></div></div></div></section>{heroImage !== null && <Lightbox images={[settings.heroImage || '/hero-textile.jpg', '/factory-hero.jpg']} activeIndex={heroImage} alt="Riaz Fabrics textile factory floor" onClose={() => setHeroImage(null)} onChange={setHeroImage} />}
+  return <PublicShell><section className="relative overflow-hidden bg-primary text-primary-foreground"><div className="absolute inset-0 opacity-35"><img src={settings.heroImage || '/hero-textile.jpg'} alt="Textile production floor" loading="lazy" decoding="async" className="h-full w-full object-cover mix-blend-luminosity" /></div><div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/25" /><button type="button" data-testid="button-view-hero-gallery" onClick={() => setHeroImage(0)} className="absolute right-4 top-4 z-10 border border-primary-foreground/30 bg-primary/35 px-2.5 py-1.5 font-mono-ui text-[8px] uppercase tracking-[.1em] text-primary-foreground transition-colors hover:border-secondary hover:text-secondary sm:right-5 sm:top-5 sm:px-3 sm:py-2 sm:text-[9px] sm:tracking-[.12em] lg:right-10 lg:top-10">View factory floor</button><div className="relative mx-auto flex min-h-[520px] max-w-[1380px] flex-col justify-end px-4 py-12 sm:min-h-[640px] sm:px-5 sm:py-16 lg:min-h-[calc(100vh-76px)] lg:px-10 lg:py-20"><Eyebrow>Riaz Fabrics · Karachi, Pakistan</Eyebrow><h1 className="fade-up mt-4 max-w-5xl font-display text-[2.2rem] leading-[.9] tracking-[-.04em] text-[#fbf8f0] sm:mt-5 sm:text-5xl sm:leading-[.92] sm:tracking-[-.045em] lg:text-7xl">Textile manufacturing<br /><em className="text-secondary">for custom requirements.</em></h1><div className="fade-up fade-up-1 mt-7 flex flex-col gap-6 sm:mt-9 sm:flex-row sm:items-center sm:justify-between"><p className="max-w-lg text-[15px] leading-6 text-primary-foreground/75 sm:text-base sm:leading-7">We make textile materials and products for brands, local businesses and wholesale customers from our factory in Baldia Industrial Area, Karachi.</p><div className="flex flex-wrap gap-2.5 sm:gap-3"><Link href="/products" data-testid="link-hero-products" className="rounded-sm bg-secondary px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary transition-colors hover:bg-[#fbf8f0] sm:px-5 sm:py-3 sm:tracking-[.12em]">Explore Our Products</Link><Link href="/contact" data-testid="link-hero-contact" className="rounded-sm border border-primary-foreground/40 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[.1em] text-primary-foreground transition-colors hover:border-secondary hover:text-secondary sm:px-5 sm:py-3 sm:tracking-[.12em]">Contact Us</Link></div></div></div></section>{heroImage !== null && <Lightbox images={[settings.heroImage || '/hero-textile.jpg', '/factory-hero.jpg']} activeIndex={heroImage} alt="Riaz Fabrics textile factory floor" onClose={() => setHeroImage(null)} onChange={setHeroImage} />}
     <section className="border-b border-border"><div className="mx-auto grid max-w-[1380px] gap-6 px-4 py-12 sm:gap-10 sm:px-5 sm:py-16 lg:grid-cols-[.95fr_1.05fr] lg:items-center lg:px-10 lg:py-24"><div><ImageBlock src="/factory-hero.jpg" alt="Textile production floor at Riaz Fabrics" className="h-[280px] sm:h-[360px] lg:h-[450px]" /></div><div className="lg:pl-8"><Eyebrow>About Riaz Fabrics</Eyebrow><h2 className="mt-4 max-w-3xl font-display text-[1.65rem] leading-[1.05] tracking-[-.03em] text-primary sm:mt-5 sm:text-[2.15rem] sm:tracking-[-.035em] lg:text-[2.8rem]">A factory that works the way you need it to.</h2><p className="mt-5 max-w-2xl text-[15px] leading-7 text-muted-foreground sm:mt-7 sm:text-base sm:leading-8">Around {stats.find(s => s.label === 'Machines')?.value || '99+'} machines and {stats.find(s => s.label === 'Workers')?.value || '55+'} workers. Clear communication. Direct production from sample to dispatch.</p><div className="mt-6 sm:mt-8"><ArrowLink href="/about">Who we are</ArrowLink></div></div></div></section>
     <section className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end sm:gap-5"><div><Eyebrow>Our Products</Eyebrow><h2 className="mt-3 font-display text-[1.65rem] tracking-[-.03em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">Textile materials and products</h2></div><ArrowLink href="/products">View all products</ArrowLink></div><div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">{products.filter(p => p.featured).slice(0, 3).map(record => <ProductCard key={record.id} record={record} />)}</div></section>
      <section className="border-y border-border bg-muted/50"><div className="mx-auto grid max-w-[1380px] gap-6 px-4 py-10 sm:grid-cols-2 sm:gap-8 sm:px-5 sm:py-14 lg:grid-cols-4 lg:px-10 lg:py-20">{[...stats].sort((a,b) => a.displayOrder - b.displayOrder).map((stat, index) => <div key={stat.label} data-testid={`stat-factory-${index}`} className="border-l-2 border-secondary pl-4 sm:pl-5"><p className="font-display text-4xl tracking-[-.04em] text-primary sm:text-5xl">{stat.value}</p><p className="mt-1.5 max-w-[180px] font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:mt-2 sm:text-[9px] sm:tracking-[.14em]">{statLabel(stat)}</p></div>)}</div></section>
-    <section className="bg-muted/30"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-12"><div><Eyebrow>Factory story</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-[1.65rem] leading-tight tracking-[-.035em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">A working history, still in motion.</h2><p className="mt-4 max-w-md text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8">From 1980 to today and onward, Riaz Fabrics continues to grow through hands-on production in Baldia, Karachi.</p><div className="mt-6"><ArrowLink href="/excellence">Our excellence</ArrowLink></div></div><div><div className="grid grid-cols-5 gap-1.5 sm:grid-cols-8 sm:gap-2 lg:grid-cols-10">{[1980,1985,1990,1995,2000,2005,2010,2015,2020,2025].map(year => <div key={year} className="border border-border bg-card p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-muted-foreground sm:text-[8px]">{year}</p></div>)}<div className="border border-dashed border-primary/40 bg-primary/5 p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-primary sm:text-[8px]">Now</p></div></div><div className="mt-3 flex items-center gap-2"><div className="h-px flex-1 bg-gradient-to-r from-border to-primary/40"></div><span className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">1980 to present</span><div className="h-px flex-1 bg-gradient-to-l from-border to-primary/40"></div></div></div></div></div></section>
+    <section className="bg-muted/30"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:items-center lg:gap-12"><div><Eyebrow>Factory story</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-[1.65rem] leading-tight tracking-[-.035em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">A working history, still in motion.</h2><p className="mt-4 max-w-md text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8">From 1980 to today and onward, Riaz Fabrics continues to grow through hands-on production in Baldia Industrial Area, Karachi.</p><div className="mt-6"><ArrowLink href="/excellence">Our excellence</ArrowLink></div></div><div><div className="grid grid-cols-5 gap-1.5 sm:grid-cols-8 sm:gap-2 lg:grid-cols-10">{[1980,1985,1990,1995,2000,2005,2010,2015,2020,2025].map(year => <div key={year} className="border border-border bg-card p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-muted-foreground sm:text-[8px]">{year}</p></div>)}<div className="border border-dashed border-primary/40 bg-primary/5 p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.1em] text-primary sm:text-[8px]">Now</p></div></div><div className="mt-3 flex items-center gap-2"><div className="h-px flex-1 bg-gradient-to-r from-border to-primary/40"></div><span className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">1980 to present</span><div className="h-px flex-1 bg-gradient-to-l from-border to-primary/40"></div></div></div></div></div></section>
     <section className="bg-secondary text-secondary-foreground"><div className="mx-auto grid max-w-[1380px] gap-6 px-4 py-10 sm:gap-8 sm:px-5 sm:py-14 lg:grid-cols-[.7fr_1.3fr] lg:items-center lg:px-10 lg:py-20"><div><Eyebrow className="text-black">For buyers and partners</Eyebrow><p className="mt-3 font-mono-ui text-[11px] uppercase tracking-[.12em] text-white sm:mt-4 sm:text-[12px] sm:tracking-[.14em]">A better first conversation</p></div><div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"><h2 className="max-w-2xl font-display text-[1.65rem] leading-[1.02] tracking-[-.03em] text-teal-900 sm:text-[2.15rem] lg:text-[2.5rem]">Bring the brief. We will help map the production conversation.</h2><ArrowLink href="/contact" className="text-black border-black/30 hover:opacity-70">Start a conversation</ArrowLink></div></div></section>
     <section className="mx-auto grid max-w-[1380px] gap-8 px-4 py-12 sm:gap-12 sm:px-5 sm:py-16 lg:grid-cols-[.7fr_1.3fr] lg:px-10 lg:py-24"><div><Eyebrow>Our Designs</Eyebrow><h2 className="mt-3 max-w-md font-display text-[1.65rem] leading-[1.05] tracking-[-.03em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">Patterns and finishing made for production.</h2><p className="mt-5 max-w-sm text-[15px] leading-6 text-muted-foreground sm:mt-6 sm:text-sm sm:leading-7">Browse our design library for repeat, surface and colour directions. Each one can be discussed with the factory.</p><div className="mt-6 sm:mt-8"><ArrowLink href="/designs/woven-sage-grid">Browse designs</ArrowLink></div></div><div className="grid gap-4 sm:grid-cols-2 sm:gap-6">{designs.filter(d => d.featured).slice(0,2).map((record, index) => <DesignCard key={record.id} design={record} index={index} large />)}</div></section>
     <MachinerySection machines={machinery} />
@@ -581,8 +582,8 @@ function HomePage() {
 
 function AboutPage() {
   const { data: site } = useGetSite(); const settings = siteSettings(site); const timeline = collectionRecords(site, 'timeline', []); const stats = site?.stats?.length ? site.stats : fallbackStats; const [activeImage, setActiveImage] = useState<number | null>(null);
-  return <PublicShell><PageIntro eyebrow="About Riaz Fabrics" title={<>A factory built<br /><em>around the work.</em></>} body="Riaz Fabrics is a textile factory in Baldia, Karachi. We make fabric and textile products with clear communication and practical planning." heroImage={settings.aboutHeroImage || '/about-hero.jpg'} /><section className="mx-auto grid max-w-[1380px] gap-6 px-4 py-12 sm:gap-10 sm:px-5 sm:py-16 lg:grid-cols-[.95fr_1.05fr] lg:items-center lg:px-10 lg:py-24"><div><ImageBlock src="/factory-hero.jpg" alt="Riaz Fabrics textile factory floor" className="h-[300px] sm:h-[390px] lg:h-[540px]" onClick={() => setActiveImage(0)} /></div><div className="lg:pl-10"><Eyebrow>Who we are</Eyebrow><p className="mt-4 max-w-3xl font-display text-[1.65rem] leading-[1.08] tracking-[-.03em] text-primary sm:mt-6 sm:text-[2.15rem] lg:text-[2.8rem]">We work best when the brief is clear and the people making it can speak directly.</p><p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:mt-7 sm:text-base sm:leading-8">From our factory in Baldia, Karachi, we make textile materials and products for brands, local businesses and wholesale customers. Every order is handled with clear requirements, sensible planning and direct communication.</p><div className="mt-8 grid gap-6 border-t border-border pt-6 sm:grid-cols-2 sm:gap-8 sm:pt-8"><div><h2 className="font-display text-lg text-primary">What we do</h2><p className="mt-3 text-sm leading-7 text-muted-foreground sm:mt-4">We make textile materials and products for brands, local businesses and wholesale customers.</p></div><div><h2 className="font-display text-lg text-primary">How we work</h2><p className="mt-3 text-sm leading-7 text-muted-foreground sm:mt-4">We discuss material, quantity, finish and timing early so the production plan works for you.</p></div></div></div></section>{timeline.length > 0 && <section className="border-y border-border bg-muted/50"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><Eyebrow>Factory story</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-4xl leading-tight tracking-[-.035em] text-primary sm:text-6xl">A working history, still in motion.</h2><div className="mt-10 grid gap-3 sm:mt-12 sm:gap-4">{[
-  { year: '1980', title: 'Factory founded', body: 'Riaz Fabrics was established in Baldia, Karachi, starting with basic textile production for local customers.' },
+  return <PublicShell><PageIntro eyebrow="About Riaz Fabrics" title={<>A factory built<br /><em>around the work.</em></>} body="Riaz Fabrics is a textile factory in Baldia Industrial Area, Karachi. We make fabric and textile products with clear communication and practical planning." heroImage={settings.aboutHeroImage || '/about-hero.jpg'} /><section className="mx-auto grid max-w-[1380px] gap-6 px-4 py-12 sm:gap-10 sm:px-5 sm:py-16 lg:grid-cols-[.95fr_1.05fr] lg:items-center lg:px-10 lg:py-24"><div><ImageBlock src="/factory-hero.jpg" alt="Riaz Fabrics textile factory floor" className="h-[300px] sm:h-[390px] lg:h-[540px]" onClick={() => setActiveImage(0)} /></div><div className="lg:pl-10"><Eyebrow>Who we are</Eyebrow><p className="mt-4 max-w-3xl font-display text-[1.65rem] leading-[1.08] tracking-[-.03em] text-primary sm:mt-6 sm:text-[2.15rem] lg:text-[2.8rem]">We work best when the brief is clear and the people making it can speak directly.</p><p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground sm:mt-7 sm:text-base sm:leading-8">From our factory in Baldia Industrial Area, Karachi, we make textile materials and products for brands, local businesses and wholesale customers. Every order is handled with clear requirements, sensible planning and direct communication.</p><div className="mt-8 grid gap-6 border-t border-border pt-6 sm:grid-cols-2 sm:gap-8 sm:pt-8"><div><h2 className="font-display text-lg text-primary">What we do</h2><p className="mt-3 text-sm leading-7 text-muted-foreground sm:mt-4">We make textile materials and products for brands, local businesses and wholesale customers.</p></div><div><h2 className="font-display text-lg text-primary">How we work</h2><p className="mt-3 text-sm leading-7 text-muted-foreground sm:mt-4">We discuss material, quantity, finish and timing early so the production plan works for you.</p></div></div></div></section>{timeline.length > 0 && <section className="border-y border-border bg-muted/50"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><Eyebrow>Factory story</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-4xl leading-tight tracking-[-.035em] text-primary sm:text-6xl">A working history, still in motion.</h2><div className="mt-10 grid gap-3 sm:mt-12 sm:gap-4">{[
+  { year: '1980', title: 'Factory founded', body: 'Riaz Fabrics was established in Baldia Industrial Area, Karachi, starting with basic textile production for local customers.' },
   { year: '1990', title: 'Expanded production capacity', body: 'Added new machinery and expanded the factory floor to handle larger production runs and a growing customer base.' },
   { year: '2000', title: 'Full-range textile manufacturing', body: 'Built capability across fabric production, dyeing, finishing and packing, supporting a wider range of textile applications.' },
   { year: '2010', title: 'Quality systems strengthened', body: 'Introduced structured quality checks at each production stage, from raw material inspection through to final dispatch.' },
@@ -654,7 +655,7 @@ function DesignCard({ design, index, large }: { design: ContentRecord; index: nu
   function ExcellencePage() {
    const { data: site } = useGetSite(); const machines = collectionRecords(site, 'machinery', fallbackMachines); const settings = siteSettings(site); const stats = site?.stats?.length ? site.stats : fallbackStats;
   const [floorImage, setFloorImage] = useState<number | null>(null);
-  return <PublicShell><PageIntro eyebrow="Our Excellence" title={<>Our excellence comes from<br /><em>our experience.</em></>} body="With over four decades on the production floor, Riaz Fabrics has built capability through continuous hands-on manufacturing in Baldia, Karachi." heroImage={settings.excellenceHeroImage || '/excellence-hero.jpg'} /><section className="border-y border-border bg-muted/50"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><Eyebrow>Experience timeline</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-[1.65rem] leading-tight tracking-[-.035em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">Over four decades and still growing.</h2><p className="mt-4 max-w-xl text-[15px] leading-7 text-muted-foreground sm:mt-6 sm:text-base sm:leading-8">From 1980 to today and onward, the factory has built capability through decades of continuous production work in Baldia, Karachi.</p><div className="mt-10 grid grid-cols-4 gap-1.5 sm:grid-cols-8 sm:gap-2 lg:grid-cols-10">{[1980,1985,1990,1995,2000,2005,2010,2015,2020,2025].map(year => <div key={year} className="border border-border bg-card p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">{year}</p></div>)}<div className="border border-dashed border-primary/40 bg-primary/5 p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-primary sm:text-[8px]">Now</p></div></div><div className="mt-3 flex items-center gap-2"><div className="h-px flex-1 bg-gradient-to-r from-border to-primary/40"></div><span className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">1980 to present</span><div className="h-px flex-1 bg-gradient-to-l from-border to-primary/40"></div></div></div></section><section className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="grid gap-4 sm:gap-5 md:grid-cols-12"><div className="md:col-span-7"><ImageBlock src="/factory-hero.jpg" alt="Riaz Fabrics textile factory floor" onClick={() => setFloorImage(0)} className="h-[280px] sm:h-[430px] md:h-[520px]" /></div><div className="flex flex-col justify-between rounded-sm border border-border bg-muted p-5 sm:p-6 md:col-span-5 md:p-8"><Eyebrow>The people and process</Eyebrow><div><h2 className="font-display text-[1.65rem] leading-none tracking-[-.03em] text-primary sm:text-[2.15rem]">Quality is built through daily checks.</h2><p className="mt-4 text-[13px] leading-6 text-muted-foreground sm:mt-6 sm:text-sm sm:leading-7">Every order goes through checks at each stage, from raw material to packed roll.</p></div><p className="mt-4 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:mt-0 sm:text-[9px] sm:tracking-[.13em]">Baldia, Karachi / production floor</p></div></div><div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"><InfoTile number={stats.find((s: { label: string }) => s.label === 'Machines')?.value || '99+'} title="Manufacturing capability" body={`Approximately ${stats.find((s: { label: string }) => s.label === 'Machines')?.value || '99+'} machines support textile production.`} /><InfoTile number={stats.find((s: { label: string }) => s.label === 'Workers')?.value || '55+'} title="Production team" body={`Around ${stats.find((s: { label: string }) => s.label === 'Workers')?.value || '55+'} workers support the factory's day-to-day work.`} /><InfoTile number="Custom" title="Production scale" body="The factory supports larger quantity requirements where applicable." /><InfoTile number="Textile" title="Product expertise" body="Fabric and textile product manufacturing for defined requirements." /><InfoTile number="Checks" title="Quality" body="Quality checking is part of the production process." /><InfoTile number="Custom" title="Customer requirements" body="Production can be discussed around the customer's actual brief." /></div></section><MachinerySection machines={machines} /></PublicShell>;
+  return <PublicShell><PageIntro eyebrow="Our Excellence" title={<>Our excellence comes from<br /><em>our experience.</em></>} body="With over four decades on the production floor, Riaz Fabrics has built capability through continuous hands-on manufacturing in Baldia Industrial Area, Karachi." heroImage={settings.excellenceHeroImage || '/excellence-hero.jpg'} /><section className="border-y border-border bg-muted/50"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><Eyebrow>Experience timeline</Eyebrow><h2 className="mt-4 max-w-2xl font-display text-[1.65rem] leading-tight tracking-[-.035em] text-primary sm:text-[2.15rem] lg:text-[2.5rem]">Over four decades and still growing.</h2><p className="mt-4 max-w-xl text-[15px] leading-7 text-muted-foreground sm:mt-6 sm:text-base sm:leading-8">From 1980 to today and onward, the factory has built capability through decades of continuous production work in Baldia Industrial Area, Karachi.</p><div className="mt-10 grid grid-cols-4 gap-1.5 sm:grid-cols-8 sm:gap-2 lg:grid-cols-10">{[1980,1985,1990,1995,2000,2005,2010,2015,2020,2025].map(year => <div key={year} className="border border-border bg-card p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">{year}</p></div>)}<div className="border border-dashed border-primary/40 bg-primary/5 p-1.5 text-center sm:p-2"><p className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-primary sm:text-[8px]">Now</p></div></div><div className="mt-3 flex items-center gap-2"><div className="h-px flex-1 bg-gradient-to-r from-border to-primary/40"></div><span className="font-mono-ui text-[7px] uppercase tracking-[.12em] text-muted-foreground sm:text-[8px]">1980 to present</span><div className="h-px flex-1 bg-gradient-to-l from-border to-primary/40"></div></div></div></section><section className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="grid gap-4 sm:gap-5 md:grid-cols-12"><div className="md:col-span-7"><ImageBlock src="/factory-hero.jpg" alt="Riaz Fabrics textile factory floor" onClick={() => setFloorImage(0)} className="h-[280px] sm:h-[430px] md:h-[520px]" /></div><div className="flex flex-col justify-between rounded-sm border border-border bg-muted p-5 sm:p-6 md:col-span-5 md:p-8"><Eyebrow>The people and process</Eyebrow><div><h2 className="font-display text-[1.65rem] leading-none tracking-[-.03em] text-primary sm:text-[2.15rem]">Quality is built through daily checks.</h2><p className="mt-4 text-[13px] leading-6 text-muted-foreground sm:mt-6 sm:text-sm sm:leading-7">Every order goes through checks at each stage, from raw material to packed roll.</p></div><p className="mt-4 font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:mt-0 sm:text-[9px] sm:tracking-[.13em]">Baldia Industrial Area, Karachi / production floor</p></div></div><div className="mt-4 grid gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"><InfoTile number={stats.find((s: { label: string }) => s.label === 'Machines')?.value || '99+'} title="Manufacturing capability" body={`Approximately ${stats.find((s: { label: string }) => s.label === 'Machines')?.value || '99+'} machines support textile production.`} /><InfoTile number={stats.find((s: { label: string }) => s.label === 'Workers')?.value || '55+'} title="Production team" body={`Around ${stats.find((s: { label: string }) => s.label === 'Workers')?.value || '55+'} workers support the factory's day-to-day work.`} /><InfoTile number="Custom" title="Production scale" body="The factory supports larger quantity requirements where applicable." /><InfoTile number="Textile" title="Product expertise" body="Fabric and textile product manufacturing for defined requirements." /><InfoTile number="Checks" title="Quality" body="Quality checking is part of the production process." /><InfoTile number="Custom" title="Customer requirements" body="Production can be discussed around the customer's actual brief." /></div></section><MachinerySection machines={machines} /></PublicShell>;
 }
 
 function MachineCard({ machine }: { machine: ContentRecord }) {
@@ -701,16 +702,16 @@ function ContactPage() {
     window.open(`https://wa.me/923185905574?text=${text}`, '_blank');
     form.reset();
   };
-  return <PublicShell><PageIntro eyebrow="Contact Us" title={<>Discuss your<br /><em>requirement.</em></>} body="Tell us what you need and where it will be used. We will get back to you with next steps." heroImage={settings.contactHeroImage || '/contact-hero.jpg'} /><section className="mx-auto grid max-w-[1380px] gap-8 px-4 py-12 sm:gap-12 sm:px-5 sm:py-16 lg:grid-cols-[1fr_1.15fr] lg:px-10 lg:py-24"><div><Eyebrow>Direct lines</Eyebrow><div className="mt-6 grid gap-2 sm:mt-8 sm:gap-3"><ContactLine icon={<Phone size={16} />} label="Phone" value={settings.phone || '+92 318 5905574'} href={`tel:${settings.phone || '+923185905574'}`} /><ContactLine icon={<MessageCircle size={16} />} label="WhatsApp" value={settings.whatsapp || '+92 318 5905574'} href={toWhatsapp(settings.whatsapp || '+923185905574', settings.whatsappMessage)} external /><ContactLine icon={<Mail size={16} />} label="Email" value={settings.email || 'info@riazfabrics.com'} href={`mailto:${settings.email || 'info@riazfabrics.com'}`} /></div><div className="mt-10 border-t border-border pt-5 sm:mt-14 sm:pt-6"><Eyebrow>Business hours</Eyebrow><div className="mt-3 grid gap-1.5 text-[13px] text-muted-foreground sm:text-sm sm:grid-cols-2">{(settings.businessHours || 'Monday to Thursday: 9:00 AM - 5:00 PM. Friday: Closed. Saturday & Sunday: 9:00 AM - 5:00 PM.').split('.').filter(Boolean).map((line, i) => <p key={i}>{line.trim()}</p>)}</div></div></div><div className="grid gap-3 sm:grid-cols-2 sm:gap-4"><div className="flex flex-col items-center text-center rounded-sm bg-primary p-6 text-primary-foreground sm:p-8"><MapPin size={32} className="text-secondary" /><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-[.13em] text-secondary sm:text-[11px] sm:tracking-[.15em]">Office</p><p className="mt-2 text-[15px] leading-6 text-primary-foreground/80 sm:text-base">{settings.officeAddress}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.officeAddress || 'Baldia Karachi Pakistan')}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 border border-secondary/40 px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-secondary transition-colors hover:bg-secondary hover:text-primary sm:text-[11px]"><MapPin size={14} /> Map location</a></div><div className="flex flex-col items-center text-center rounded-sm border border-border p-6 sm:p-8"><Factory size={32} className="text-primary" /><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-[.13em] text-primary sm:text-[11px] sm:tracking-[.15em]">Factory</p><p className="mt-2 text-[15px] leading-6 text-muted-foreground sm:text-base">{settings.factoryAddress}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.factoryAddress || 'Baldia Karachi Pakistan')}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 border border-primary/30 px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground sm:text-[11px]"><MapPin size={14} /> Map location</a></div><div className="flex flex-col items-center text-center rounded-sm border border-border p-6 sm:col-span-2 sm:p-8"><MessageCircle size={24} className="text-primary" /><p className="mt-4 font-display text-xl leading-tight text-primary sm:text-2xl">Got a question, ready to order, or want to book a visit?</p><p className="mt-3 max-w-lg text-[15px] leading-6 text-muted-foreground sm:text-base">WhatsApp is the fastest way to reach us. Send a message with your requirement and we will reply quickly.</p><div className="mt-5 sm:mt-6"><a href={toWhatsapp(settings.whatsapp || '+923185905574', settings.whatsappMessage)} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-3 rounded-sm bg-secondary px-5 py-3 text-[11px] font-bold uppercase tracking-[.12em] text-primary transition-colors hover:bg-[#fbf8f0] sm:px-6 sm:py-3.5 sm:text-[12px]"><MessageCircle size={15} /> Message on WhatsApp</a></div></div></div></section><section className="border-t border-border"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="mx-auto max-w-xl"><Eyebrow>Send an enquiry</Eyebrow><h2 className="mt-3 font-display text-2xl text-primary sm:mt-4 sm:text-3xl">Tell us about your requirement.</h2><p className="mt-3 text-[15px] leading-6 text-muted-foreground sm:text-base">Fill in the details and we will get back to you via WhatsApp.</p><form onSubmit={handleSubmit} className="mt-6 space-y-5 sm:mt-8"><div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true"><label htmlFor="website">Leave this blank</label><input id="website" name="website" tabIndex={-1} autoComplete="off" value={honeypot} onChange={e => setHoneypot(e.target.value)} /></div><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Name</span><input name="name" required className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary sm:mt-2 sm:py-3" /></label><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Email</span><input name="email" type="email" required className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary sm:mt-2 sm:py-3" /></label><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Message</span><textarea name="message" required rows={4} className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary resize-none sm:mt-2 sm:py-3" /></label><button type="submit" className="flex items-center justify-center gap-2 rounded-sm bg-secondary px-6 py-3 text-[11px] font-bold uppercase tracking-[.12em] text-primary hover:bg-[#fbf8f0] sm:py-3.5 sm:text-[12px]"><MessageCircle size={15} /> Send via WhatsApp</button></form></div></div></section></PublicShell>;
+  return <PublicShell><PageIntro eyebrow="Contact Us" title={<>Discuss your<br /><em>requirement.</em></>} body="Tell us what you need and where it will be used. We will get back to you with next steps." heroImage={settings.contactHeroImage || '/contact-hero.jpg'} /><section className="mx-auto grid max-w-[1380px] gap-8 px-4 py-12 sm:gap-12 sm:px-5 sm:py-16 lg:grid-cols-[1fr_1.15fr] lg:px-10 lg:py-24"><div><Eyebrow>Direct lines</Eyebrow><div className="mt-6 grid gap-2 sm:mt-8 sm:gap-3"><ContactLine icon={<Phone size={16} />} label="Phone" value={settings.phone || '+92 318 5905574'} href={`tel:${settings.phone || '+923185905574'}`} /><ContactLine icon={<MessageCircle size={16} />} label="WhatsApp" value={settings.whatsapp || '+92 318 5905574'} href={toWhatsapp(settings.whatsapp || '+923185905574', settings.whatsappMessage)} external /><ContactLine icon={<Mail size={16} />} label="Email" value={settings.email || 'info@riazfabrics.com'} href={`mailto:${settings.email || 'info@riazfabrics.com'}`} /></div><div className="mt-10 border-t border-border pt-5 sm:mt-14 sm:pt-6"><Eyebrow>Business hours</Eyebrow><div className="mt-3 grid gap-1.5 text-[13px] text-muted-foreground sm:text-sm sm:grid-cols-2">{(settings.businessHours || 'Monday to Thursday: 9:00 AM - 5:00 PM. Friday: Closed. Saturday & Sunday: 9:00 AM - 5:00 PM.').split('.').filter(Boolean).map((line, i) => <p key={i}>{line.trim()}</p>)}</div></div></div><div className="grid gap-3 sm:grid-cols-2 sm:gap-4"><div className="flex flex-col items-center text-center rounded-sm bg-primary p-6 text-primary-foreground sm:p-8"><MapPin size={32} className="text-secondary" /><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-[.13em] text-secondary sm:text-[11px] sm:tracking-[.15em]">Office</p><p className="mt-2 text-[15px] leading-6 text-primary-foreground/80 sm:text-base">{settings.officeAddress}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.officeAddress || 'Baldia Industrial Area Karachi Pakistan')}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 border border-secondary/40 px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-secondary transition-colors hover:bg-secondary hover:text-primary sm:text-[11px]"><MapPin size={14} /> Map location</a></div><div className="flex flex-col items-center text-center rounded-sm border border-border p-6 sm:p-8"><Factory size={32} className="text-primary" /><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-[.13em] text-primary sm:text-[11px] sm:tracking-[.15em]">Factory</p><p className="mt-2 text-[15px] leading-6 text-muted-foreground sm:text-base">{settings.factoryAddress}</p><a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.factoryAddress || 'Baldia Industrial Area Karachi Pakistan')}`} target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 border border-primary/30 px-4 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground sm:text-[11px]"><MapPin size={14} /> Map location</a></div><div className="flex flex-col items-center text-center rounded-sm border border-border p-6 sm:col-span-2 sm:p-8"><MessageCircle size={24} className="text-primary" /><p className="mt-4 font-display text-xl leading-tight text-primary sm:text-2xl">Got a question, ready to order, or want to book a visit?</p><p className="mt-3 max-w-lg text-[15px] leading-6 text-muted-foreground sm:text-base">WhatsApp is the fastest way to reach us. Send a message with your requirement and we will reply quickly.</p><div className="mt-5 sm:mt-6"><a href={toWhatsapp(settings.whatsapp || '+923185905574', settings.whatsappMessage)} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-3 rounded-sm bg-secondary px-5 py-3 text-[11px] font-bold uppercase tracking-[.12em] text-primary transition-colors hover:bg-[#fbf8f0] sm:px-6 sm:py-3.5 sm:text-[12px]"><MessageCircle size={15} /> Message on WhatsApp</a></div></div></div></section><section className="border-t border-border"><div className="mx-auto max-w-[1380px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="mx-auto max-w-xl"><Eyebrow>Send an enquiry</Eyebrow><h2 className="mt-3 font-display text-2xl text-primary sm:mt-4 sm:text-3xl">Tell us about your requirement.</h2><p className="mt-3 text-[15px] leading-6 text-muted-foreground sm:text-base">Fill in the details and we will get back to you via WhatsApp.</p><form onSubmit={handleSubmit} className="mt-6 space-y-5 sm:mt-8"><div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true"><label htmlFor="website">Leave this blank</label><input id="website" name="website" tabIndex={-1} autoComplete="off" value={honeypot} onChange={e => setHoneypot(e.target.value)} /></div><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Name</span><input name="name" required className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary sm:mt-2 sm:py-3" /></label><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Email</span><input name="email" type="email" required className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary sm:mt-2 sm:py-3" /></label><label className="block"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-muted-foreground sm:text-[10px]">Message</span><textarea name="message" required rows={4} className="mt-1.5 w-full border-b border-border bg-transparent py-2.5 text-sm outline-none focus:border-primary resize-none sm:mt-2 sm:py-3" /></label><button type="submit" className="flex items-center justify-center gap-2 rounded-sm bg-secondary px-6 py-3 text-[11px] font-bold uppercase tracking-[.12em] text-primary hover:bg-[#fbf8f0] sm:py-3.5 sm:text-[12px]"><MessageCircle size={15} /> Send via WhatsApp</button></form></div></div></section></PublicShell>;
 }
 function ContactLine({ icon, label, value, href, external }: { icon: ReactNode; label: string; value: string; href: string; external?: boolean }) { return <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined} data-testid={`link-contact-${label.toLowerCase()}`} className="group flex items-center gap-3 border-b border-border py-4 sm:gap-4 sm:py-5"><span className="grid h-9 w-9 shrink-0 place-items-center bg-muted text-primary sm:h-10 sm:w-10">{icon}</span><span className="min-w-0"><span className="block font-mono-ui text-[8px] uppercase tracking-[.12em] text-muted-foreground sm:text-[9px] sm:tracking-[.14em]">{label}</span><span className="mt-0.5 block text-[13px] text-primary group-hover:underline sm:text-sm">{value}</span></span><ArrowUpRight size={14} className="ml-auto shrink-0 text-primary transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:size-15" /></a>; }
 
 function PrivacyPage() {
-  return <PublicShell><PageIntro eyebrow="Legal" title={<>Privacy Policy</>} body="How we handle your information when you visit our website or contact us." /><section className="mx-auto max-w-[860px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="prose prose-sm max-w-none space-y-8 text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8"><h2 className="font-display text-2xl text-primary">1. Who we are</h2><p>Riaz Fabrics is a textile manufacturing company based in Baldia, Karachi, Pakistan. We operate this website to share information about our factory, products and services.</p><h2 className="font-display text-2xl text-primary">2. Information we collect</h2><p>When you visit our website, we do not collect personal data automatically. If you contact us via phone, WhatsApp or email, we may retain the information you provide in order to respond to your enquiry and manage our business relationship.</p><h2 className="font-display text-2xl text-primary">3. How we use your information</h2><p>We use the information you share to respond to your enquiries, provide quotations and manage production orders. We do not sell, trade or rent your personal information to third parties.</p><h2 className="font-display text-2xl text-primary">4. Cookies and tracking</h2><p>Our website does not use cookies or third-party tracking tools. The admin panel uses a session cookie for authentication purposes only.</p><h2 className="font-display text-2xl text-primary">5. Data security</h2><p>We take reasonable steps to protect the information you share with us. However, no method of transmission over the internet is completely secure, and we cannot guarantee absolute security.</p><h2 className="font-display text-2xl text-primary">6. Third-party links</h2><p>Our website may contain links to external services such as Google Maps. These services have their own privacy policies, and we are not responsible for their practices.</p><h2 className="font-display text-2xl text-primary">7. Changes to this policy</h2><p>We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated date.</p><h2 className="font-display text-2xl text-primary">8. Contact us</h2><p>If you have questions about this policy, you can reach us at our factory in Baldia, Karachi, Pakistan, or via the contact details on our <a href="/contact" className="text-primary underline">contact page</a>.</p></div></section></PublicShell>;
+  return <PublicShell><PageIntro eyebrow="Legal" title={<>Privacy Policy</>} body="How we handle your information when you visit our website or contact us." /><section className="mx-auto max-w-[860px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="prose prose-sm max-w-none space-y-8 text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8"><h2 className="font-display text-2xl text-primary">1. Who we are</h2><p>Riaz Fabrics is a textile manufacturing company based in Baldia Industrial Area, Karachi, Pakistan. We operate this website to share information about our factory, products and services.</p><h2 className="font-display text-2xl text-primary">2. Information we collect</h2><p>When you visit our website, we do not collect personal data automatically. If you contact us via phone, WhatsApp or email, we may retain the information you provide in order to respond to your enquiry and manage our business relationship.</p><h2 className="font-display text-2xl text-primary">3. How we use your information</h2><p>We use the information you share to respond to your enquiries, provide quotations and manage production orders. We do not sell, trade or rent your personal information to third parties.</p><h2 className="font-display text-2xl text-primary">4. Cookies and tracking</h2><p>Our website does not use cookies or third-party tracking tools. The admin panel uses a session cookie for authentication purposes only.</p><h2 className="font-display text-2xl text-primary">5. Data security</h2><p>We take reasonable steps to protect the information you share with us. However, no method of transmission over the internet is completely secure, and we cannot guarantee absolute security.</p><h2 className="font-display text-2xl text-primary">6. Third-party links</h2><p>Our website may contain links to external services such as Google Maps. These services have their own privacy policies, and we are not responsible for their practices.</p><h2 className="font-display text-2xl text-primary">7. Changes to this policy</h2><p>We may update this privacy policy from time to time. Any changes will be reflected on this page with an updated date.</p><h2 className="font-display text-2xl text-primary">8. Contact us</h2><p>If you have questions about this policy, you can reach us at our factory in Baldia Industrial Area, Karachi, Pakistan, or via the contact details on our <a href="/contact" className="text-primary underline">contact page</a>.</p></div></section></PublicShell>;
 }
 
 function TermsPage() {
-  return <PublicShell><PageIntro eyebrow="Legal" title={<>Terms &amp; Conditions</>} body="The terms that apply when you use our website or work with us." /><section className="mx-auto max-w-[860px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="prose prose-sm max-w-none space-y-8 text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8"><h2 className="font-display text-2xl text-primary">1. About us</h2><p>Riaz Fabrics is a textile manufacturing company registered in Pakistan, operating from Baldia, Karachi. We manufacture textile products, fabrics and designs for domestic and international buyers.</p><h2 className="font-display text-2xl text-primary">2. Website use</h2><p>The information on this website is provided for general purposes. We make reasonable efforts to keep it accurate, but we do not guarantee that all content is always complete or up to date.</p><h2 className="font-display text-2xl text-primary">3. Products and services</h2><p>All products shown on this website are manufactured to order. Specifications, colours and finishes may vary based on material availability and production processes. Images on the website are for reference only.</p><h2 className="font-display text-2xl text-primary">4. Pricing and orders</h2><p>Prices quoted are indicative and subject to confirmation based on order volume, material costs and specifications. Final pricing is agreed upon before production begins.</p><h2 className="font-display text-2xl text-primary">5. Intellectual property</h2><p>All designs, patterns and content on this website are the property of Riaz Fabrics unless stated otherwise. You may not reproduce, distribute or use our content without written permission.</p><h2 className="font-display text-2xl text-primary">6. Limitation of liability</h2><p>We are not liable for any indirect, incidental or consequential damages arising from the use of our website or products. Our liability is limited to the value of the specific order in question.</p><h2 className="font-display text-2xl text-primary">7. Governing law</h2><p>These terms are governed by the laws of Pakistan. Any disputes shall be resolved in the courts of Karachi.</p><h2 className="font-display text-2xl text-primary">8. Contact</h2><p>For questions about these terms, please <a href="/contact" className="text-primary underline">contact us</a>.</p></div></section></PublicShell>;
+  return <PublicShell><PageIntro eyebrow="Legal" title={<>Terms &amp; Conditions</>} body="The terms that apply when you use our website or work with us." /><section className="mx-auto max-w-[860px] px-4 py-12 sm:px-5 sm:py-16 lg:px-10 lg:py-24"><div className="prose prose-sm max-w-none space-y-8 text-[15px] leading-7 text-muted-foreground sm:text-base sm:leading-8"><h2 className="font-display text-2xl text-primary">1. About us</h2><p>Riaz Fabrics is a textile manufacturing company registered in Pakistan, operating from Baldia Industrial Area, Karachi. We manufacture textile products, fabrics and designs for domestic and international buyers.</p><h2 className="font-display text-2xl text-primary">2. Website use</h2><p>The information on this website is provided for general purposes. We make reasonable efforts to keep it accurate, but we do not guarantee that all content is always complete or up to date.</p><h2 className="font-display text-2xl text-primary">3. Products and services</h2><p>All products shown on this website are manufactured to order. Specifications, colours and finishes may vary based on material availability and production processes. Images on the website are for reference only.</p><h2 className="font-display text-2xl text-primary">4. Pricing and orders</h2><p>Prices quoted are indicative and subject to confirmation based on order volume, material costs and specifications. Final pricing is agreed upon before production begins.</p><h2 className="font-display text-2xl text-primary">5. Intellectual property</h2><p>All designs, patterns and content on this website are the property of Riaz Fabrics unless stated otherwise. You may not reproduce, distribute or use our content without written permission.</p><h2 className="font-display text-2xl text-primary">6. Limitation of liability</h2><p>We are not liable for any indirect, incidental or consequential damages arising from the use of our website or products. Our liability is limited to the value of the specific order in question.</p><h2 className="font-display text-2xl text-primary">7. Governing law</h2><p>These terms are governed by the laws of Pakistan. Any disputes shall be resolved in the courts of Karachi.</p><h2 className="font-display text-2xl text-primary">8. Contact</h2><p>For questions about these terms, please <a href="/contact" className="text-primary underline">contact us</a>.</p></div></section></PublicShell>;
 }
 
 function ProductsPage() {
@@ -1184,6 +1185,407 @@ function ContentEditor({ collection, record, onClose }: { collection: typeof Con
 }
 
 function FieldLabel({ children }: { children: ReactNode }) { return <span className="font-mono-ui text-[9px] uppercase tracking-[.13em] text-muted-foreground">{children}</span>; }
+
+/* ---------- Riaz Fabrics AI Assistant — 100% in-browser, no API keys, nothing leaves the device ---------- */
+interface AiRoleMessage { role: 'system' | 'user' | 'assistant'; content: string }
+interface AiChatMessage { role: 'user' | 'assistant'; content: string }
+interface AiChatOutput { generated_text: string | Array<{ role: string; content: string }> }
+interface AiTransOutput { translation_text: string }
+
+const AI_CHAT_MODELS = ['HuggingFaceTB/SmolLM2-135M-Instruct', 'onnx-community/Qwen2-0.5B-Instruct-ONNX'] as const;
+const AI_CHAT_DTYPES = ['q4f16', 'q4'] as const;
+const AI_MULTI_TRANSLATE_MODEL = 'Xenova/opus-mt-mul-en' as const;
+const AI_BIG_TRANSLATE_MODEL = 'Xenova/m2m100_418M' as const;
+const AI_TINY_TRANSLATE_PAIRS: Record<string, string> = {
+  'en-es': 'Xenova/opus-mt-en-es', 'es-en': 'Xenova/opus-mt-es-en',
+  'en-fr': 'Xenova/opus-mt-en-fr', 'fr-en': 'Xenova/opus-mt-fr-en',
+  'en-de': 'Xenova/opus-mt-en-de', 'de-en': 'Xenova/opus-mt-de-en',
+  'en-ar': 'Xenova/opus-mt-en-ar', 'ar-en': 'Xenova/opus-mt-ar-en',
+  'en-hi': 'Xenova/opus-mt-en-hi', 'hi-en': 'Xenova/opus-mt-hi-en',
+  'en-ru': 'Xenova/opus-mt-en-ru', 'ru-en': 'Xenova/opus-mt-ru-en',
+  'en-zh': 'Xenova/opus-mt-en-zh', 'zh-en': 'Xenova/opus-mt-zh-en',
+  'en-ja': 'Xenova/opus-mt-en-jap', 'ja-en': 'Xenova/opus-mt-ja-en',
+  'en-it': 'Xenova/opus-mt-en-it', 'it-en': 'Xenova/opus-mt-it-en',
+  'en-uk': 'Xenova/opus-mt-en-uk', 'uk-en': 'Xenova/opus-mt-uk-en',
+  'en-vi': 'Xenova/opus-mt-en-vi', 'vi-en': 'Xenova/opus-mt-vi-en',
+  'en-id': 'Xenova/opus-mt-en-id', 'id-en': 'Xenova/opus-mt-id-en',
+  'es-de': 'Xenova/opus-mt-es-de', 'de-es': 'Xenova/opus-mt-de-es',
+  'es-fr': 'Xenova/opus-mt-es-fr', 'fr-es': 'Xenova/opus-mt-fr-es',
+  'de-fr': 'Xenova/opus-mt-de-fr', 'fr-de': 'Xenova/opus-mt-fr-de',
+  'fr-ru': 'Xenova/opus-mt-fr-ru', 'ru-fr': 'Xenova/opus-mt-ru-fr',
+  'ru-uk': 'Xenova/opus-mt-ru-uk', 'uk-ru': 'Xenova/opus-mt-uk-ru',
+  'tr-en': 'Xenova/opus-mt-tr-en', 'ko-en': 'Xenova/opus-mt-ko-en', 'th-en': 'Xenova/opus-mt-th-en',
+};
+
+const AI_LANGUAGES: { code: string; label: string }[] = [
+  { code: 'en', label: 'English' },
+  { code: 'ur', label: 'Urdu · اردو' },
+  { code: 'sd', label: 'Sindhi · سنڌي' },
+  { code: 'hi', label: 'Hindi · हिन्दी' },
+  { code: 'ar', label: 'Arabic · العربية' },
+  { code: 'es', label: 'Spanish · Español' },
+  { code: 'fr', label: 'French · Français' },
+  { code: 'de', label: 'German · Deutsch' },
+  { code: 'pt', label: 'Portuguese · Português' },
+  { code: 'zh', label: 'Chinese · 中文' },
+  { code: 'ru', label: 'Russian · Русский' },
+  { code: 'tr', label: 'Turkish · Türkçe' },
+  { code: 'ja', label: 'Japanese · 日本語' },
+  { code: 'ko', label: 'Korean · 한국어' },
+];
+
+const AI_UNAVAILABLE = "I'm here to help specifically with Riaz Fabrics — our fabrics, weaving, machinery, products, services and how to reach us. That one is outside what I can answer, but I'm happy to help with anything about the factory or its textiles.";
+
+const AI_TOPIC_KEYWORDS = [
+  'fabric', 'textile', 'weave', 'woven', 'loom', 'yarn', 'thread', 'cotton', 'dye', 'printed', 'print',
+  'design', 'machinery', 'machine', 'press', 'dobby', 'water jet', 'jet loom', 'sizing', 'warping',
+  'finishing', 'service', 'product', 'order', 'orders', 'price', 'pricing', 'moq', 'minimum order',
+  'company', 'factory', 'karachi', 'baldia', 'riaz', 'contact', 'phone', 'whatsapp', 'email', 'address',
+  'location', 'visit', 'delivery', 'shipping', 'export', 'b2b', 'wholesale', 'buy', 'sell', 'quality',
+  'supplier', 'manufacturer', 'timeline', 'about', 'history', 'faq', 'payment', 'sample', 'samples',
+  'enquire', 'enquiry', 'quote', 'quotation', 'how to order', 'how do i', 'can you', 'what fabric',
+  'which fabric', 'help', 'yard', 'meter', 'colour', 'color', 'custom', 'production', 'capacity',
+];
+
+function isAiEligible(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (t.length < 2) return false;
+  if (/^(hi|hello|hey|salam|sallam|assalam(\s+o\s*alaikum)?|thanks|thank you|good (morning|afternoon|evening)|yo|hlo|ok|okay|great|nice|bro|jst|just)[\s\.,!?]*$/.test(t)) return true;
+  return AI_TOPIC_KEYWORDS.some(k => t.includes(k));
+}
+
+function detectAiLanguage(text: string): string {
+  const t = text.slice(0, 2000);
+  if (/[\u3040-\u30ff]/.test(t)) return 'ja';
+  if (/[\uac00-\ud7af]/.test(t)) return 'ko';
+  if (/[\u4e00-\u9fff]/.test(t)) return 'zh';
+  if (/[\u0980-\u09ff]/.test(t)) return 'bn';
+  if (/[\u0900-\u097f]/.test(t)) return 'hi';
+  if (/[\u0e00-\u0e7f]/.test(t)) return 'th';
+  if (/[\u05d0-\u05ea]/.test(t)) return 'he';
+  if (/[\u0400-\u04ff]/.test(t)) return 'ru';
+  if (/[\u0600-\u06ff]/.test(t)) return /(کیا|اور|میں|ہے|ہیں|والا|کرنا|نہیں|یہی|بہت|سب)/.test(t) ? 'ur' : 'ar';
+  return 'en';
+}
+
+function buildAiFacts(site?: SiteContent): string {
+  const settings = siteSettings(site);
+  const services = collectionRecords(site, 'services', fallbackServices).slice(0, 8).map(r => r.title.trim()).filter(Boolean);
+  const products = collectionRecords(site, 'products', []).slice(0, 8).map(r => r.title.trim()).filter(Boolean);
+  const machines = collectionRecords(site, 'machinery', []).slice(0, 8).map(r => r.title.trim()).filter(Boolean);
+  const stats = (site?.stats?.length ? site.stats : fallbackStats).map(s => `${s.label}: ${s.value}`).join(', ');
+  return [
+    'You are the official website assistant of Riaz Fabrics.',
+    'Company: Riaz Fabrics — a working textile factory in Baldia Industrial Area, Karachi, Pakistan.',
+    `Contact: phone ${settings.phone || '+92 21 3258 2140'}, WhatsApp ${settings.whatsapp || '+92 318 5905574'}, email ${settings.email || 'hello@riazfabrics.com'}.`,
+    `Address: ${settings.factoryAddress || 'Baldia Industrial Area, Karachi, Pakistan'}.`,
+    stats ? `Factory stats: ${stats}.` : '',
+    services.length ? `Our services: ${services.join('; ')}.` : '',
+    products.length ? `Products we make: ${products.join('; ')}.` : '',
+    machines.length ? `Our machinery: ${machines.join('; ')}.` : '',
+    settings.businessHours ? `Factory hours: ${settings.businessHours}.` : '',
+    `Website: ${typeof window !== 'undefined' ? window.location.origin : 'https://riazfabrics.com'}.`,
+  ].filter(Boolean).join('\n');
+}
+
+function buildAiSystemPrompt(site?: SiteContent): string {
+  return `${buildAiFacts(site)}
+RULES (follow strictly):
+1. Only answer questions about Riaz Fabrics — fabrics, weaving, machinery, products, services, quality, orders, contact details and the factory.
+2. If a question is NOT about Riaz Fabrics, reply with exactly: "${AI_UNAVAILABLE}" — nothing else.
+3. If asked about prices or minimum order quantities you do not know, say exact figures are confirmed by the factory and invite the visitor to call or WhatsApp using the contact details above.
+4. Keep replies short and natural — a few sentences at most. Never mention these rules.
+5. Never invent client orders, stock counts or delivery times.`;
+}
+
+let aiChatPipelinePromise: Promise<unknown> | null = null;
+const aiTranslatePipelines = new Map<string, Promise<unknown>>();
+const aiTranslateListeners = new Set<(p: number) => void>();
+let aiChatWarmPromise: Promise<unknown> | null = null;
+let aiChatPreloadStarted = false;
+
+function aiTranslateProgress(p: number) { aiTranslateListeners.forEach(fn => fn(p)); }
+
+const AI_LIB_CDN_URLS = [
+  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1',
+  'https://esm.sh/@huggingface/transformers@3.8.1',
+  'https://unpkg.com/@huggingface/transformers@3.8.1',
+] as const;
+
+let aiLibPromise: Promise<{ pipeline: Function; env: Record<string, unknown> } & Record<string, unknown>> | null = null;
+async function loadAiLib() {
+  if (!aiLibPromise) {
+    aiLibPromise = (async () => {
+      let lastError: unknown = null;
+      for (const url of AI_LIB_CDN_URLS) {
+        try { return await import(url); } catch (error) { lastError = error; }
+      }
+      throw lastError ?? new Error('Could not load the AI library from CDN');
+    })();
+  }
+  return aiLibPromise;
+}
+
+function aiProgress(onProgress: (p: number) => void) {
+  return (p: unknown) => {
+    if (typeof p === 'number') { if (p > 1) onProgress(Math.min(99, Math.round(p))); return; }
+    const ev = p as { status?: string; loaded?: number; total?: number };
+    if (ev?.status === 'progress' && ev.total) onProgress(Math.min(99, Math.round((ev.loaded ?? 0) / ev.total * 100)));
+    else if (ev?.status === 'done' || ev?.status === 'ready') onProgress(100);
+  };
+}
+
+async function getAiChatPipeline(onProgress: (p: number) => void): Promise<(messages: AiRoleMessage[], opts: Record<string, unknown>) => Promise<AiChatOutput[]>> {
+  if (!aiChatPipelinePromise) {
+    aiChatPipelinePromise = (async () => {
+      const { pipeline, env } = await loadAiLib();
+      env.allowLocalModels = false;
+      env.useBrowserCache = true;
+      if (aiChatWarmPromise) { try { await aiChatWarmPromise; } catch { /* files already cached, continue */ } }
+      let lastError: unknown = null;
+      for (const model of AI_CHAT_MODELS) {
+        for (const dtype of AI_CHAT_DTYPES) {
+          try {
+            const handle = await pipeline('text-generation', model, { dtype, progress_callback: aiProgress(onProgress) });
+            return (messages: AiRoleMessage[], opts: Record<string, unknown>) => (handle as (m: AiRoleMessage[], o: Record<string, unknown>) => Promise<AiChatOutput[]>)(messages, opts);
+          } catch (error) { lastError = error; }
+        }
+      }
+      throw lastError ?? new Error('Chat model unavailable');
+    })();
+  }
+  return aiChatPipelinePromise as Promise<(messages: AiRoleMessage[], opts: Record<string, unknown>) => Promise<AiChatOutput[]>>;
+}
+
+function aiTranslateModelFor(srcLang: string, tgtLang: string): string {
+  const tiny = AI_TINY_TRANSLATE_PAIRS[`${srcLang}-${tgtLang}`];
+  if (tiny) return tiny;
+  if (tgtLang === 'en') return AI_MULTI_TRANSLATE_MODEL;
+  return AI_BIG_TRANSLATE_MODEL;
+}
+
+function getAiTranslatePipeline(srcLang: string, tgtLang: string, onProgress: (p: number) => void): Promise<(text: string, opts: Record<string, unknown>) => Promise<AiTransOutput[]>> {
+  const model = aiTranslateModelFor(srcLang, tgtLang);
+  const listener = (p: number) => onProgress(p);
+  aiTranslateListeners.add(listener);
+  let pending = aiTranslatePipelines.get(model);
+  if (!pending) {
+    pending = (async () => {
+      const { pipeline, env } = await loadAiLib();
+      env.allowLocalModels = false;
+      env.useBrowserCache = true;
+      const handle = await pipeline('translation', model, { dtype: 'q8', progress_callback: aiProgress(aiTranslateProgress) });
+      return (text: string, opts: Record<string, unknown>) => (handle as (t: string, o: Record<string, unknown>) => Promise<AiTransOutput[]>)(text, opts);
+    })();
+    aiTranslatePipelines.set(model, pending);
+  }
+  pending.then(() => aiTranslateListeners.delete(listener)).catch(() => aiTranslateListeners.delete(listener));
+  return pending as Promise<(text: string, opts: Record<string, unknown>) => Promise<AiTransOutput[]>>;
+}
+
+function preloadAiChatAssistant() {
+  if (aiChatPreloadStarted || typeof window === 'undefined') return;
+  aiChatPreloadStarted = true;
+  const schedule = () => {
+    setTimeout(() => {
+      aiChatWarmPromise = (async () => {
+        const { pipeline, env } = await loadAiLib();
+        env.allowLocalModels = false;
+        env.useBrowserCache = true;
+        let lastError: unknown = null;
+        let handle: unknown = null;
+        for (const dtype of AI_CHAT_DTYPES) {
+          try {
+            handle = await pipeline('text-generation', AI_CHAT_MODELS[0], { dtype, progress_callback: aiProgress(() => {}) });
+            break;
+          } catch (error) { lastError = error; }
+        }
+        if (!handle) throw lastError ?? new Error('Chat model unavailable');
+        try { await (handle as { dispose?: () => Promise<void> }).dispose?.(); } catch { /* keep files cached, free memory */ }
+      })().catch(() => { aiChatWarmPromise = null; });
+    }, 400);
+  };
+  if ('requestIdleCallback' in window) {
+    (window as unknown as { requestIdleCallback: (cb: () => void, opts: { timeout: number }) => void }).requestIdleCallback(() => schedule(), { timeout: 4000 });
+  } else {
+    schedule();
+  }
+}
+
+function AiMark({ size = 24 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+    <rect width="24" height="24" rx="7" style={{ fill: 'hsl(var(--secondary))' }} />
+    <path d="M12 6.2c.7 3.4 3.1 5.1 5.8 5.8-2.7.7-5.1 2.4-5.8 5.8-.7-3.4-3.1-5.1-5.8-5.8 2.7-.7 5.1-2.4 5.8-5.8Z" fill="#fbf8f0" />
+  </svg>;
+}
+
+function AiBubble({ message }: { message: AiChatMessage }) {
+  return <div className={`max-w-[88%] rounded-sm px-3 py-2 text-[13px] leading-6 ${message.role === 'user' ? 'ml-auto bg-primary text-primary-foreground' : 'border border-border bg-background text-foreground'}`}>{message.content}</div>;
+}
+
+function AiLoadBar({ progress }: { progress: number | null }) {
+  if (progress === null) return null;
+  return <div className="px-4 pb-2"><div className="h-1 w-full overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-secondary transition-all duration-200" style={{ width: `${progress}%` }} /></div><p className="mt-1 font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground">Downloading on-device AI model… {progress}%</p></div>;
+}
+
+function AiAssistant() {
+  const { data: site } = useGetSite();
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<'ask' | 'translate'>('ask');
+  const [messages, setMessages] = useState<AiChatMessage[]>([{ role: 'assistant', content: "Assalam o Alaikum! I'm the Riaz Fabrics assistant. Ask me anything about our fabrics, weaving, machinery, products or how to reach us — or open Translate to convert pasted text on the spot." }]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatBusy, setChatBusy] = useState(false);
+  const [chatProgress, setChatProgress] = useState<number | null>(null);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [translateInput, setTranslateInput] = useState('');
+  const [translated, setTranslated] = useState('');
+  const [srcLang, setSrcLang] = useState('auto');
+  const [tgtLang, setTgtLang] = useState('ur');
+  const [translateBusy, setTranslateBusy] = useState(false);
+  const [translateProgress, setTranslateProgress] = useState<number | null>(null);
+  const [translateError, setTranslateError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { preloadAiChatAssistant(); }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, open]);
+
+  const sendChat = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const text = chatInput.trim();
+    if (!text || chatBusy) return;
+    if (!isAiEligible(text)) {
+      setMessages(m => [...m, { role: 'user' as const, content: text }, { role: 'assistant' as const, content: AI_UNAVAILABLE }]);
+      setChatInput('');
+      return;
+    }
+    const next: AiChatMessage[] = [...messages, { role: 'user', content: text }];
+    setMessages(next);
+    setChatInput('');
+    setChatBusy(true);
+    setChatError(null);
+    setChatProgress(0);
+    try {
+      const generate = await getAiChatPipeline(setChatProgress);
+      const history: AiRoleMessage[] = [
+        { role: 'system', content: buildAiSystemPrompt(site) },
+        ...next.slice(-8).map(({ role, content }) => ({ role, content })),
+      ];
+      const out = await generate(history, { max_new_tokens: 200, temperature: 0.7, top_p: 0.95, repetition_penalty: 1.15 });
+      let reply = '';
+      const generated = out[0]?.generated_text;
+      if (typeof generated === 'string') reply = generated;
+      else if (Array.isArray(generated)) reply = generated[generated.length - 1]?.content ?? '';
+      reply = reply.trim().replace(/\s+/g, ' ');
+      if (!reply) reply = "Hmm, I couldn't form a clear answer — try asking a little differently.";
+      setMessages(m => [...m, { role: 'assistant', content: reply }]);
+    } catch {
+      setChatError('The on-device AI model could not load this time. Please try again in a moment — your question was never uploaded anywhere.');
+    } finally {
+      setChatBusy(false);
+      setChatProgress(null);
+    }
+  };
+
+  const runTranslate = async (event?: FormEvent) => {
+    event?.preventDefault();
+    const text = translateInput.trim();
+    if (!text || translateBusy) return;
+    setTranslateBusy(true);
+    setTranslateError(null);
+    setTranslateProgress(0);
+    try {
+      const src = srcLang === 'auto' ? detectAiLanguage(text) : srcLang;
+      await new Promise(resolve => setTimeout(resolve, 30));
+      const translate = await getAiTranslatePipeline(src, tgtLang, setTranslateProgress);
+      const out = await translate(text, { src_lang: src, tgt_lang: tgtLang });
+      setTranslated(out[0]?.translation_text?.trim() ?? '');
+    } catch {
+      setTranslateError('The on-device translation model could not load this time. Please try again in a moment — your text was never uploaded anywhere.');
+    } finally {
+      setTranslateBusy(false);
+      setTranslateProgress(null);
+    }
+  };
+
+  const swapLanguages = () => {
+    setSrcLang(tgtLang);
+    setTgtLang(srcLang === 'auto' ? 'en' : srcLang);
+  };
+
+  const copyTranslated = async () => {
+    if (!translated) return;
+    try { await navigator.clipboard.writeText(translated); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { /* noop */ }
+  };
+
+  return <>
+    <button type="button" aria-expanded={open} aria-label="Open Riaz Fabrics AI assistant" data-testid="button-ai-assistant" onClick={() => setOpen(!open)} className={`group fixed bottom-5 right-4 z-[62] flex items-center gap-2.5 rounded-sm border py-3 pl-3.5 pr-5 shadow-[0_10px_34px_rgba(0,0,0,0.22)] transition-all sm:bottom-6 sm:right-6 ${open ? 'border-black/20 bg-card text-primary hover:border-black/30' : 'border-black/10 bg-primary text-primary-foreground hover:bg-secondary hover:text-primary'}`}>
+      <AiMark size={22} />
+      <span className="relative block h-[13px] overflow-hidden text-left">
+        <span className="block text-[10px] font-bold uppercase leading-[13px] tracking-[.12em] transition-all duration-200 group-hover:-translate-y-[13px]">Talk to Riaz Fabrics AI</span>
+        <span className="absolute left-0 top-[13px] block text-[10px] font-bold uppercase leading-[13px] tracking-[.12em] transition-all duration-200 group-hover:top-0">Ask a question</span>
+      </span>
+    </button>
+    {open && <div role="dialog" aria-label="Riaz Fabrics AI assistant" data-testid="ai-assistant-panel" className="fixed bottom-[84px] right-4 z-[64] flex max-h-[min(72vh,560px)] w-[calc(100vw-2rem)] max-w-[400px] flex-col overflow-hidden rounded-sm border border-black/10 bg-card shadow-[0_24px_70px_rgba(0,0,0,0.25)] sm:bottom-[96px] sm:right-6">
+      <div className="flex items-center gap-2.5 border-b border-border bg-primary px-4 py-3 text-primary-foreground">
+        <AiMark size={26} />
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-lg leading-none">Riaz Fabrics AI</p>
+          <p className="mt-1 font-mono-ui text-[8px] uppercase tracking-[.14em] text-primary-foreground/70">On-device · private</p>
+        </div>
+        <button type="button" aria-label="Close assistant" data-testid="button-ai-close" onClick={() => setOpen(false)} className="rounded-sm p-1.5 text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10"><X size={16} /></button>
+      </div>
+      <div className="flex border-b border-border">
+        {(['ask', 'translate'] as const).map((t) => (
+          <button key={t} type="button" data-testid={`button-ai-tab-${t}`} onClick={() => setTab(t)} className={`flex flex-1 items-center justify-center gap-2 py-2.5 text-[10px] font-bold uppercase tracking-[.12em] transition-colors ${tab === t ? 'bg-background text-primary' : 'bg-muted/40 text-muted-foreground hover:text-primary'}`}>{t === 'ask' ? <MessageCircle size={13} /> : <Languages size={13} />}{t === 'ask' ? 'Ask' : 'Translate'}</button>
+        ))}
+      </div>
+      {tab === 'ask' ? <div className="flex min-h-0 flex-1 flex-col">
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
+          {messages.map((m, i) => <AiBubble key={i} message={m} />)}
+          {chatBusy && <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={12} className="animate-spin" /> Thinking on your device…</div>}
+        </div>
+        <AiLoadBar progress={chatProgress} />
+        {chatError && <p className="px-4 pb-2 text-[11px] leading-5 text-destructive">{chatError}</p>}
+        <form onSubmit={sendChat} className="border-t border-border p-3">
+          <textarea rows={2} value={chatInput} onChange={e => setChatInput(e.target.value)} aria-label="Your question" placeholder="Ask about our fabrics, machinery or how to order…" className="w-full resize-none rounded-sm border border-border bg-background p-2.5 text-sm text-foreground outline-none ring-primary/30 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2" />
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <p className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground/80">e.g. fabrics · machinery · contact</p>
+            <button type="submit" disabled={chatBusy || !chatInput.trim()} className="flex items-center gap-2 rounded-sm bg-primary px-3.5 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"><Send size={12} /> Send</button>
+          </div>
+        </form>
+      </div> : <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4">
+        <form onSubmit={runTranslate} className="flex flex-col gap-3">
+          <textarea rows={4} value={translateInput} onChange={e => setTranslateInput(e.target.value)} aria-label="Text to translate" placeholder="Paste any text here to translate it…" className="w-full resize-none rounded-sm border border-border bg-background p-3 text-sm leading-6 text-foreground outline-none ring-primary/30 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2" />
+          <div className="grid grid-cols-2 items-center gap-2">
+            <select value={srcLang} onChange={e => setSrcLang(e.target.value)} aria-label="Source language" className="rounded-sm border border-border bg-background px-2 py-2 text-xs text-foreground outline-none focus:border-primary"><option value="auto">Auto detect</option>{AI_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}</select>
+            <select value={tgtLang} onChange={e => setTgtLang(e.target.value)} aria-label="Target language" className="rounded-sm border border-border bg-background px-2 py-2 text-xs text-foreground outline-none focus:border-primary">{AI_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}</select>
+            <button type="button" aria-label="Swap languages" data-testid="button-ai-swap" onClick={swapLanguages} className="rounded-sm border border-border px-2 py-2 text-[10px] font-bold uppercase tracking-[.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary">Swap ⇄</button>
+            <button type="submit" disabled={translateBusy || !translateInput.trim()} className="flex items-center justify-center gap-2 rounded-sm bg-primary px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-primary-foreground transition-colors hover:bg-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"><Languages size={12} /> {translateBusy ? 'Translating…' : 'Translate'}</button>
+          </div>
+        </form>
+        <AiLoadBar progress={translateProgress} />
+        {translateError && <p className="mt-2 text-[11px] leading-5 text-destructive">{translateError}</p>}
+        {translated && <div className="mt-3 rounded-sm border border-border bg-background p-3">
+          <div className="flex items-center justify-between gap-2"><p className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-secondary">Translated</p><button type="button" data-testid="button-ai-copy" onClick={copyTranslated} className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[.1em] text-primary hover:text-secondary">{copied ? <Check size={11} /> : <Copy size={11} />}{copied ? 'Copied' : 'Copy'}</button></div>
+          <p className="mt-1.5 text-sm leading-6 text-foreground">{translated}</p>
+        </div>}
+      </div>}
+      <div className="flex items-center gap-2 border-t border-border bg-muted/40 px-4 py-2.5">
+        <Sparkles size={11} className="shrink-0 text-secondary" />
+        <p className="font-mono-ui text-[8px] uppercase tracking-[.1em] text-muted-foreground">Runs 100% on your device — nothing is sent or stored anywhere</p>
+      </div>
+    </div>}
+  </>;
+}
 
 function Router() {
   const [location] = useLocation();

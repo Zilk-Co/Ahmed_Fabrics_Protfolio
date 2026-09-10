@@ -1,7 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Ahmed Riaz Textile Factory"
-description = "A public textile manufacturing portfolio for Ahmed Riaz in Baldia, Karachi, with product categories, factory capability, designs, and bulk inquiry contact paths."
+description = "A public textile manufacturing portfolio for Ahmed Riaz in Baldia Industrial Area, Karachi, with product categories, factory capability, designs, and bulk inquiry contact paths."
 version = "1.0.0"
 id = "artifacts/ahmed-riaz-textile"
 router = "path"
